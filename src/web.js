@@ -635,10 +635,10 @@ app.get('/', (req, res) => {
             top: 50%;
             transform: translateY(-50%);
             background: transparent;
-            padding: 2px 5px;
-            font-size: 0.5rem;
+            padding: 4px 8px;
+            font-size: 0.8rem;
             display: flex;
-            gap: 3px;
+            gap: 6px;
             align-items: center;
             color: #ffffff;
             z-index: 10;
@@ -1238,11 +1238,17 @@ async function startupScrape() {
   }
 }
 
-app.listen(PORT, async () => {
-  console.log(`🚀 USCIS News Web App running at http://localhost:${PORT}`);
-  console.log(`📰 Scraping: ${SITES.join(', ')}`);
-  console.log(`🤖 OpenAI: ${process.env.OPENAI_API_KEY ? 'Enabled' : 'Disabled'}`);
-  
-  // Start scraping in background
-  startupScrape();
-});
+// Vercel serverless function export
+export default app;
+
+// Only start server if not in Vercel environment
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, async () => {
+    console.log(`🚀 USCIS News Web App running at http://localhost:${PORT}`);
+    console.log(`📰 Scraping: ${SITES.join(', ')}`);
+    console.log(`🤖 OpenAI: ${process.env.OPENAI_API_KEY ? 'Enabled' : 'Disabled'}`);
+    
+    // Start scraping in background
+    startupScrape();
+  });
+}
