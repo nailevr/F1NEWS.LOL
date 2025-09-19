@@ -90,49 +90,71 @@ const COUNTRY_FLAGS = {
   'brunei': '🇧🇳'
 };
 
-// Sample F1 news data
+// Real USCIS news data with AI-generated F1 summaries
 const sampleArticles = [
   {
-    title: "USCIS Announces Streamlined F1 Student Visa Processing Procedures",
-    url: "https://www.uscis.gov/newsroom/news-releases/streamlined-f1-processing",
-    date: new Date().toISOString(),
-    content: "USCIS has implemented new streamlined procedures for F1 student visa processing that will significantly reduce application review times for international students.",
-    countries: [{ name: 'china', flag: '🇨🇳' }, { name: 'india', flag: '🇮🇳' }, { name: 'south korea', flag: '🇰🇷' }]
+    title: "West Virginia Couple Plead Guilty to Immigration Crimes",
+    url: "https://www.uscis.gov/newsroom/news-releases/west-virginia-couple-plead-guilty-to-immigration-crimes",
+    date: "2025-09-18T18:57:26.000Z",
+    content: "USCIS announces successful prosecution of immigration-related crimes.",
+    countries: [{ name: 'india', flag: '🇮🇳' }],
+    summary: "📅 Sep 18, 2025 | West Virginia Couple Plead Guilty to Immigration Crimes\n🎓 Potential causes for F1 students - This case highlights the importance of maintaining compliance with immigration laws, as violations can lead to increased scrutiny and potential consequences for F1 visa holders."
   },
   {
-    title: "Enhanced Security Protocols for International Student Applications",
-    url: "https://www.uscis.gov/newsroom/news-releases/security-protocols-students",
-    date: new Date(Date.now() - 86400000).toISOString(),
-    content: "New security measures have been introduced to ensure the integrity of international student visa applications while maintaining efficient processing times.",
-    countries: [{ name: 'mexico', flag: '🇲🇽' }, { name: 'philippines', flag: '🇵🇭' }, { name: 'vietnam', flag: '🇻🇳' }]
+    title: "Connecticut Man Sentenced to Prison for Defrauding Immigrant Clients and USCIS",
+    url: "https://www.uscis.gov/newsroom/news-releases/connecticut-man-sentenced-to-prison-for-defrauding-immigrant-clients-and-uscis",
+    date: "2025-09-18T16:26:00.000Z",
+    content: "USCIS announces successful prosecution of immigration fraud.",
+    countries: [],
+    summary: "📅 Sep 18, 2025 | Connecticut Man Sentenced to Prison for Defrauding Immigrant Clients and USCIS\n🎓 Potential causes for F1 students - F1 students should be cautious of fraudulent services that may jeopardize their visa status and future immigration benefits."
   },
   {
-    title: "Updated F1 Student Work Authorization Guidelines",
-    url: "https://www.uscis.gov/newsroom/news-releases/f1-work-authorization-update",
-    date: new Date(Date.now() - 172800000).toISOString(),
-    content: "USCIS has updated guidelines for F1 student work authorization, including new provisions for Optional Practical Training (OPT) programs.",
-    countries: [{ name: 'japan', flag: '🇯🇵' }, { name: 'thailand', flag: '🇹🇭' }, { name: 'indonesia', flag: '🇮🇩' }]
+    title: "USCIS Unveils First Changes to Naturalization Test in Multi-Step Overhaul of American Citizenship Standards",
+    url: "https://www.uscis.gov/newsroom/news-releases/uscis-unveils-first-changes-to-naturalization-test-in-multi-step-overhaul-of-american-citizenship",
+    date: "2025-09-17T14:16:34.000Z",
+    content: "USCIS announces major changes to the naturalization test process.",
+    countries: [],
+    summary: "📅 Sep 17, 2025 | USCIS Unveils First Changes to Naturalization Test in Multi-Step Overhaul of American Citizenship Standards\n🎓 Potential causes for F1 students - Changes to the naturalization test may indirectly affect F1 students considering pathways to citizenship after their studies, emphasizing the importance of understanding evolving citizenship requirements."
   },
   {
-    title: "International Student Status Maintenance Requirements",
-    url: "https://www.uscis.gov/newsroom/news-releases/student-status-maintenance",
-    date: new Date(Date.now() - 259200000).toISOString(),
-    content: "New requirements have been established for F1 students to maintain their status, including updated enrollment verification procedures.",
-    countries: [{ name: 'brazil', flag: '🇧🇷' }, { name: 'colombia', flag: '🇨🇴' }, { name: 'peru', flag: '🇵🇪' }]
+    title: "USCIS Reaches H-2B Cap for First Half of Fiscal Year 2026",
+    url: "https://www.uscis.gov/newsroom/alerts/uscis-reaches-h-2b-cap-for-first-half-of-fiscal-year-2026",
+    date: "2025-09-16T15:16:51.000Z",
+    content: "USCIS announces H-2B visa cap reached for first half of fiscal year 2026.",
+    countries: [],
+    summary: "📅 Sep 16, 2025 | USCIS Reaches H-2B Cap for First Half of Fiscal Year 2026\n🎓 Potential causes for F1 students - The reaching of the H-2B cap may limit employment opportunities for F1 students seeking practical training or internships in seasonal jobs."
   },
   {
-    title: "F1 Student Visa Extension Processing Updates",
-    url: "https://www.uscis.gov/newsroom/news-releases/f1-extension-processing",
-    date: new Date(Date.now() - 345600000).toISOString(),
-    content: "Processing procedures for F1 student visa extensions have been updated to include new documentation requirements and faster review processes.",
-    countries: [{ name: 'ukraine', flag: '🇺🇦' }, { name: 'poland', flag: '🇵🇱' }, { name: 'romania', flag: '🇷🇴' }]
+    title: "DHS Terminates 2021 Designation of Venezuela for Temporary Protected Status",
+    url: "https://www.uscis.gov/newsroom/alerts/dhs-terminates-2021-designation-of-venezuela-for-temporary-protected-status",
+    date: "2025-09-05T13:13:10.000Z",
+    content: "DHS terminates Temporary Protected Status designation for Venezuela.",
+    countries: [{ name: 'venezuela', flag: '🇻🇪' }],
+    summary: "📅 Sep 5, 2025 | DHS Terminates 2021 Designation of Venezuela for Temporary Protected Status\n🎓 Potential causes for F1 students - The termination of Temporary Protected Status (TPS) for Venezuelan nationals may affect F1 students from Venezuela, as they could lose certain protections and face challenges in maintaining their visa status if they cannot return to their home country safely."
   },
   {
-    title: "International Student Travel Authorization Changes",
-    url: "https://www.uscis.gov/newsroom/news-releases/student-travel-authorization",
-    date: new Date(Date.now() - 432000000).toISOString(),
-    content: "New travel authorization procedures have been implemented for F1 students, including updated re-entry documentation requirements.",
-    countries: [{ name: 'egypt', flag: '🇪🇬' }, { name: 'nigeria', flag: '🇳🇬' }, { name: 'ethiopia', flag: '🇪🇹' }]
+    title: "Twelve People Charged for Their Roles in International Alien Smuggling, Asylum Fraud, and Money Laundering Conspiracies",
+    url: "https://www.uscis.gov/newsroom/news-releases/twelve-people-charged-for-their-roles-in-international-alien-smuggling-asylum-fraud-and-money",
+    date: "2025-09-04T21:45:59.000Z",
+    content: "USCIS announces major international smuggling and fraud investigation.",
+    countries: [{ name: 'mexico', flag: '🇲🇽' }, { name: 'lebanon', flag: '🇱🇧' }, { name: 'colombia', flag: '🇨🇴' }],
+    summary: "📅 Sep 4, 2025 | Twelve People Charged for Their Roles in International Alien Smuggling, Asylum Fraud, and Money Laundering Conspiracies\n🎓 Potential causes for F1 students - This news highlights the risks associated with fraudulent activities that could impact the integrity of the F1 visa program and lead to increased scrutiny of international students."
+  },
+  {
+    title: "USCIS to Add Special Agents with New Law Enforcement Authorities",
+    url: "https://www.uscis.gov/newsroom/news-releases/uscis-to-add-special-agents-with-new-law-enforcement-authorities",
+    date: "2025-09-04T13:00:55.000Z",
+    content: "USCIS announces expansion of law enforcement capabilities.",
+    countries: [],
+    summary: "📅 Sep 4, 2025 | USCIS to Add Special Agents with New Law Enforcement Authorities\n🎓 Potential causes for F1 students - The addition of special agents with enhanced law enforcement powers may lead to increased scrutiny of F1 students' compliance with visa regulations."
+  },
+  {
+    title: "On Constitution Day, President Trump Urges Naturalized Citizens to Honor and Respect American Law and Values",
+    url: "https://www.uscis.gov/newsroom/news-releases/on-constitution-day-president-trump-urges-naturalized-citizens-to-honor-and-respect-american-law-and",
+    date: "2025-09-03T14:30:00.000Z",
+    content: "President Trump emphasizes importance of American values for immigrants.",
+    countries: [],
+    summary: "📅 Sep 3, 2025 | On Constitution Day, President Trump Urges Naturalized Citizens to Honor and Respect American Law and Values\n🎓 Potential causes for F1 students - This emphasizes the importance of understanding and respecting U.S. laws and values for all immigrants, including F1 students, which may influence future policy decisions affecting international students."
   }
 ];
 
@@ -422,6 +444,10 @@ function generateHTML(articles) {
         let currentFilter = 'all';
         
         function getArticleSummary(article) {
+            if (article.summary) {
+                return article.summary;
+            }
+            // Fallback if no summary
             const dateStr = new Date(article.date).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
