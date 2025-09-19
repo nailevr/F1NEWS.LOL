@@ -1,8 +1,5 @@
-const express = require('express');
-const app = express();
-
-app.get('/', (req, res) => {
-  res.send(`
+module.exports = (req, res) => {
+  res.status(200).send(`
     <!DOCTYPE html>
     <html>
     <head>
@@ -67,38 +64,4 @@ app.get('/', (req, res) => {
     </body>
     </html>
   `);
-});
-
-app.get('/api/scrape', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'F1 News API is working',
-    articles: [
-      {
-        title: "West Virginia Couple Plead Guilty to Immigration Crimes",
-        date: "2025-09-18",
-        countries: ["India"]
-      },
-      {
-        title: "Connecticut Man Sentenced to Prison for Defrauding Immigrant Clients",
-        date: "2025-09-18", 
-        countries: []
-      },
-      {
-        title: "USCIS Unveils First Changes to Naturalization Test",
-        date: "2025-09-17",
-        countries: []
-      }
-    ]
-  });
-});
-
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    message: 'F1 News serverless function is working'
-  });
-});
-
-module.exports = app;
+};
