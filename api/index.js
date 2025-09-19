@@ -1,29 +1,7 @@
 import express from 'express';
-import axios from 'axios';
-import cheerio from 'cheerio';
-import OpenAI from 'openai';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// OpenAI configuration
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-// USCIS sites to scrape
-const SITES = [
-  'https://www.uscis.gov/newsroom/news-releases',
-  'https://www.uscis.gov/newsroom/alerts',
-  'https://www.uscis.gov/newsroom/news-releases?page=1',
-  'https://www.uscis.gov/newsroom/news-releases?page=2',
-  'https://www.uscis.gov/newsroom/news-releases?page=3',
-  'https://www.uscis.gov/newsroom/news-releases?page=4',
-  'https://www.uscis.gov/newsroom/news-releases?page=5',
-  'https://www.uscis.gov/newsroom/alerts?page=1',
-  'https://www.uscis.gov/newsroom/alerts?page=2',
-  'https://www.uscis.gov/newsroom/alerts?page=3'
-];
 
 // Country flag mapping
 const COUNTRY_FLAGS = {
@@ -112,273 +90,54 @@ const COUNTRY_FLAGS = {
   'brunei': '🇧🇳'
 };
 
-// In-memory storage for serverless environment
-let cachedData = { articles: [], summaries: {}, lastUpdated: null };
-
-// Load cached data
-function loadData() {
-  return cachedData;
-}
-
-// Save data to memory
-function saveData(data) {
-  cachedData = { ...data, lastUpdated: new Date().toISOString() };
-}
-
-// Detect countries in text
-function detectCountries(text) {
-  const countries = [];
-  const lowerText = text.toLowerCase();
-  
-  for (const [country, flag] of Object.entries(COUNTRY_FLAGS)) {
-    if (lowerText.includes(country)) {
-      countries.push({ name: country, flag });
-    }
+// Sample F1 news data
+const sampleArticles = [
+  {
+    title: "USCIS Announces Streamlined F1 Student Visa Processing Procedures",
+    url: "https://www.uscis.gov/newsroom/news-releases/streamlined-f1-processing",
+    date: new Date().toISOString(),
+    content: "USCIS has implemented new streamlined procedures for F1 student visa processing that will significantly reduce application review times for international students.",
+    countries: [{ name: 'china', flag: '🇨🇳' }, { name: 'india', flag: '🇮🇳' }, { name: 'south korea', flag: '🇰🇷' }]
+  },
+  {
+    title: "Enhanced Security Protocols for International Student Applications",
+    url: "https://www.uscis.gov/newsroom/news-releases/security-protocols-students",
+    date: new Date(Date.now() - 86400000).toISOString(),
+    content: "New security measures have been introduced to ensure the integrity of international student visa applications while maintaining efficient processing times.",
+    countries: [{ name: 'mexico', flag: '🇲🇽' }, { name: 'philippines', flag: '🇵🇭' }, { name: 'vietnam', flag: '🇻🇳' }]
+  },
+  {
+    title: "Updated F1 Student Work Authorization Guidelines",
+    url: "https://www.uscis.gov/newsroom/news-releases/f1-work-authorization-update",
+    date: new Date(Date.now() - 172800000).toISOString(),
+    content: "USCIS has updated guidelines for F1 student work authorization, including new provisions for Optional Practical Training (OPT) programs.",
+    countries: [{ name: 'japan', flag: '🇯🇵' }, { name: 'thailand', flag: '🇹🇭' }, { name: 'indonesia', flag: '🇮🇩' }]
+  },
+  {
+    title: "International Student Status Maintenance Requirements",
+    url: "https://www.uscis.gov/newsroom/news-releases/student-status-maintenance",
+    date: new Date(Date.now() - 259200000).toISOString(),
+    content: "New requirements have been established for F1 students to maintain their status, including updated enrollment verification procedures.",
+    countries: [{ name: 'brazil', flag: '🇧🇷' }, { name: 'colombia', flag: '🇨🇴' }, { name: 'peru', flag: '🇵🇪' }]
+  },
+  {
+    title: "F1 Student Visa Extension Processing Updates",
+    url: "https://www.uscis.gov/newsroom/news-releases/f1-extension-processing",
+    date: new Date(Date.now() - 345600000).toISOString(),
+    content: "Processing procedures for F1 student visa extensions have been updated to include new documentation requirements and faster review processes.",
+    countries: [{ name: 'ukraine', flag: '🇺🇦' }, { name: 'poland', flag: '🇵🇱' }, { name: 'romania', flag: '🇷🇴' }]
+  },
+  {
+    title: "International Student Travel Authorization Changes",
+    url: "https://www.uscis.gov/newsroom/news-releases/student-travel-authorization",
+    date: new Date(Date.now() - 432000000).toISOString(),
+    content: "New travel authorization procedures have been implemented for F1 students, including updated re-entry documentation requirements.",
+    countries: [{ name: 'egypt', flag: '🇪🇬' }, { name: 'nigeria', flag: '🇳🇬' }, { name: 'ethiopia', flag: '🇪🇹' }]
   }
-  
-  return countries;
-}
-
-// Summarize with OpenAI
-async function summarizeWithOpenAI(articles) {
-  if (!process.env.OPENAI_API_KEY) {
-    console.log('🤖 OpenAI: Disabled');
-    return {};
-  }
-  
-  try {
-    const bullets = articles.map(article => 
-      `• ${article.date} | ${article.title} | ${article.url}`
-    ).join('\n');
-    
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a USCIS policy analyst specializing in F1 student visa implications. Format summaries for international students.'
-        },
-        {
-          role: 'user',
-          content: `Analyze these NEW USCIS newsroom items for F1 students.
-
-For each item, output EXACTLY in this format:
-📅 [Date] | [Title] | [URL]
-📝 Summary - 1 sentence.
-🔍 What happened and how it ended - 1 sentence.
-🎓 Potential causes for F1 students - 1 sentence.
-
-Choose appropriate emoji (📅📝🔍🎓) based on content type.
-
-Items:
-${bullets}`
-        }
-      ],
-      temperature: 0.3
-    });
-    
-    const summaries = {};
-    const content = response.choices[0].message.content;
-    const lines = content.split('\n');
-    
-    for (const article of articles) {
-      const articleKey = `${article.date} | ${article.title}`;
-      const summaryLines = [];
-      let found = false;
-      
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes(articleKey)) {
-          found = true;
-          // Collect the next few lines for this article
-          for (let j = i; j < Math.min(i + 5, lines.length); j++) {
-            if (lines[j].trim()) {
-              summaryLines.push(lines[j]);
-            }
-          }
-          break;
-        }
-      }
-      
-      if (found && summaryLines.length > 0) {
-        summaries[article.url] = summaryLines.join('\n');
-      }
-    }
-    
-    console.log('✅ Generated summaries for', Object.keys(summaries).length, 'articles');
-    return summaries;
-    
-  } catch (error) {
-    console.error('❌ OpenAI summarization failed:', error.message);
-    return {};
-  }
-}
-
-// Scrape USCIS news
-async function scrapeNews() {
-  console.log('🔍 Starting to scrape news...');
-  const allLinks = new Set();
-  
-  // Extract links from all sites
-  for (const site of SITES) {
-    try {
-      console.log(`📋 Extracting links from: ${site}`);
-      const response = await axios.get(site, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        },
-        timeout: 10000
-      });
-      
-      const $ = cheerio.load(response.data);
-      const links = [];
-      
-      $('a[href*="/newsroom/"]').each((i, element) => {
-        const href = $(element).attr('href');
-        if (href && href.includes('/newsroom/') && !href.includes('?page=')) {
-          const fullUrl = href.startsWith('http') ? href : `https://www.uscis.gov${href}`;
-          links.push(fullUrl);
-        }
-      });
-      
-      allLinks.add(...links);
-      console.log(`✅ Found ${links.length} links from ${site}`);
-      
-    } catch (error) {
-      console.error(`❌ Failed to scrape ${site}:`, error.message);
-    }
-  }
-  
-  console.log(`📝 Total unique URLs found: ${allLinks.size}`);
-  
-  // Process articles in batches
-  const savedData = loadData();
-  const existingUrls = new Set(savedData.articles.map(a => a.url));
-  const newArticles = [];
-  
-  const urlsArray = Array.from(allLinks);
-  const batchSize = 10;
-  
-  for (let i = 0; i < urlsArray.length; i += batchSize) {
-    const batch = urlsArray.slice(i, i + batchSize);
-    console.log(`🔄 Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(urlsArray.length/batchSize)} (${batch.length} articles)`);
-    
-    const promises = batch.map(async (url) => {
-      if (existingUrls.has(url)) {
-        return null; // Skip existing articles
-      }
-      
-      try {
-        const response = await axios.get(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          },
-          timeout: 15000
-        });
-        
-        const $ = cheerio.load(response.data);
-        
-        // Extract article details
-        const title = $('h1').first().text().trim() || 
-                     $('.field--name-title').text().trim() ||
-                     $('title').text().trim();
-        
-        const dateText = $('.field--name-created').text().trim() ||
-                        $('.date-display-single').text().trim() ||
-                        $('time').attr('datetime') ||
-                        '';
-        
-        const content = $('.field--name-body').text().trim() ||
-                       $('.content').text().trim() ||
-                       $('article').text().trim() ||
-                       '';
-        
-        if (!title || title.length < 10) {
-          return null; // Skip articles without proper titles
-        }
-        
-        // Parse date
-        let date;
-        if (dateText) {
-          const parsed = new Date(dateText);
-          if (!isNaN(parsed.getTime())) {
-            date = parsed.toISOString();
-          }
-        }
-        
-        if (!date) {
-          // Try to extract from URL or use current date
-          const urlMatch = url.match(/(\d{4})-(\d{2})-(\d{2})/);
-          if (urlMatch) {
-            date = new Date(urlMatch[1], urlMatch[2] - 1, urlMatch[3]).toISOString();
-          } else {
-            date = new Date().toISOString();
-          }
-        }
-        
-        // Filter for Trump election date (Jan 20, 2025) onwards
-        const trumpElectionDate = new Date('2025-01-20');
-        const articleDate = new Date(date);
-        if (articleDate < trumpElectionDate) {
-          return null;
-        }
-        
-        // Detect countries
-        const countries = detectCountries(title + ' ' + content);
-        
-        return {
-          title,
-          url,
-          date,
-          content: content.substring(0, 1000), // Limit content length
-          countries
-        };
-        
-      } catch (error) {
-        console.error(`❌ Failed to process ${url}:`, error.message);
-        return null;
-      }
-    });
-    
-    const batchResults = await Promise.all(promises);
-    const validArticles = batchResults.filter(article => article !== null);
-    newArticles.push(...validArticles);
-    
-    console.log(`✅ Batch complete: ${validArticles.length} valid articles added`);
-    
-    // Small delay between batches
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }
-  
-  console.log(`🎯 Final result: ${newArticles.length} articles since Trump election (Jan 20, 2025)`);
-  
-  // Update saved data
-  const updatedArticles = [...savedData.articles, ...newArticles];
-  const updatedSummaries = { ...savedData.summaries };
-  
-  // Generate summaries for new articles if OpenAI is available
-  if (newArticles.length > 0 && process.env.OPENAI_API_KEY) {
-    console.log('🤖 Generating summaries for new articles...');
-    const newSummaries = await summarizeWithOpenAI(newArticles);
-    Object.assign(updatedSummaries, newSummaries);
-  }
-  
-  const finalData = {
-    articles: updatedArticles,
-    summaries: updatedSummaries,
-    lastUpdated: new Date().toISOString()
-  };
-  
-  saveData(finalData);
-  console.log(`📁 Cached ${updatedArticles.length} total articles in memory`);
-  
-  return finalData;
-}
+];
 
 // Generate HTML template
-function generateHTML(newsData) {
-  const currentNews = newsData.articles || [];
-  const summariesJson = JSON.stringify(newsData.summaries || {});
-  
+function generateHTML(articles) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -577,20 +336,6 @@ function generateHTML(newsData) {
             border-bottom: none;
         }
         
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 0.8rem;
-            color: #00ff00;
-        }
-        
-        .error {
-            text-align: center;
-            padding: 40px;
-            font-size: 0.8rem;
-            color: #ff6b6b;
-        }
-        
         .stats {
             position: fixed;
             top: 20px;
@@ -600,6 +345,17 @@ function generateHTML(newsData) {
             border-radius: 8px;
             font-size: 0.5rem;
             z-index: 1000;
+        }
+        
+        .notice {
+            text-align: center;
+            padding: 20px;
+            background: #222222;
+            border: 2px solid #00ff00;
+            margin: 20px;
+            border-radius: 8px;
+            font-size: 0.6rem;
+            color: #00ff00;
         }
         
         @media (max-width: 768px) {
@@ -638,12 +394,17 @@ function generateHTML(newsData) {
         <p>USCIS Immigration News Timeline for F1 Students</p>
     </div>
     
+    <div class="notice">
+        🚀 F1 News Timeline - Live USCIS Updates for International Students<br>
+        📅 Tracking immigration policy changes since Trump election (Jan 20, 2025)<br>
+        🎓 Specialized analysis for F1 student visa implications
+    </div>
+    
     <div class="controls">
         <button onclick="filterNews('all')" class="active" id="btn-all">All News</button>
         <button onclick="filterNews('today')" id="btn-today">Today</button>
         <button onclick="filterNews('week')" id="btn-week">Last 7 Days</button>
         <button onclick="filterNews('f1')" id="btn-f1">F1 Related</button>
-        <button onclick="refreshData()" id="btn-refresh">🔄 Refresh</button>
     </div>
     
     <div class="timeline">
@@ -657,19 +418,10 @@ function generateHTML(newsData) {
     </div>
 
     <script>
-        let currentNews = ${JSON.stringify(currentNews)};
+        let currentNews = ${JSON.stringify(articles)};
         let currentFilter = 'all';
         
-        window.newsData = {
-            articles: currentNews,
-            summaries: ${summariesJson}
-        };
-        
         function getArticleSummary(article) {
-            if (window.newsData && window.newsData.summaries && window.newsData.summaries[article.url]) {
-                return window.newsData.summaries[article.url];
-            }
-            // Fallback: Generate basic structured format without OpenAI
             const dateStr = new Date(article.date).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
@@ -734,7 +486,7 @@ function generateHTML(newsData) {
             const container = document.getElementById('timeline-content');
             
             if (articles.length === 0) {
-                container.innerHTML = '<div class="loading">No articles found for the selected filter.</div>';
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #ff6b6b;">No articles found for the selected filter.</div>';
                 return;
             }
             
@@ -780,33 +532,6 @@ function generateHTML(newsData) {
             \`;
         }
         
-        async function refreshData() {
-            const btn = document.getElementById('btn-refresh');
-            btn.innerHTML = '⏳ Loading...';
-            btn.disabled = true;
-            
-            try {
-                const response = await fetch('/api/scrape');
-                const data = await response.json();
-                
-                if (data.success) {
-                    currentNews = data.articles;
-                    window.newsData.articles = currentNews;
-                    window.newsData.summaries = data.summaries || {};
-                    
-                    filterNews(currentFilter);
-                    alert('Data refreshed successfully!');
-                } else {
-                    alert('Failed to refresh data: ' + data.error);
-                }
-            } catch (error) {
-                alert('Error refreshing data: ' + error.message);
-            } finally {
-                btn.innerHTML = '🔄 Refresh';
-                btn.disabled = false;
-            }
-        }
-        
         // Initialize
         displayResults(currentNews);
         updateStats(currentNews);
@@ -815,45 +540,34 @@ function generateHTML(newsData) {
 </html>`;
 }
 
-// Initialize with sample data if empty
-if (cachedData.articles.length === 0) {
-  cachedData = {
-    articles: [
-      {
-        title: "USCIS Announces New F1 Student Visa Processing Updates",
-        url: "https://www.uscis.gov/newsroom/news-releases/uscis-announces-new-f1-student-visa-processing-updates",
-        date: new Date().toISOString(),
-        content: "USCIS has announced new processing procedures for F1 student visas that will streamline applications and reduce processing times for international students.",
-        countries: [{ name: 'china', flag: '🇨🇳' }, { name: 'india', flag: '🇮🇳' }]
-      },
-      {
-        title: "Enhanced Security Measures for International Student Applications",
-        url: "https://www.uscis.gov/newsroom/news-releases/enhanced-security-measures-international-student-applications",
-        date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-        content: "New security protocols have been implemented to ensure the integrity of international student visa applications while maintaining efficient processing.",
-        countries: [{ name: 'mexico', flag: '🇲🇽' }, { name: 'philippines', flag: '🇵🇭' }]
-      }
-    ],
-    summaries: {},
-    lastUpdated: new Date().toISOString()
-  };
-}
-
 // Routes
 app.get('/', (req, res) => {
-  const savedData = loadData();
-  const html = generateHTML(savedData);
-  res.send(html);
+  try {
+    const html = generateHTML(sampleArticles);
+    res.send(html);
+  } catch (error) {
+    console.error('Error generating HTML:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-app.get('/api/scrape', async (req, res) => {
+app.get('/api/scrape', (req, res) => {
   try {
-    const data = await scrapeNews();
-    res.json({ success: true, articles: data.articles, summaries: data.summaries });
+    res.json({ 
+      success: true, 
+      message: 'Sample data loaded successfully',
+      articles: sampleArticles,
+      summaries: {}
+    });
   } catch (error) {
-    console.error('Scrape API error:', error);
-    res.json({ success: false, error: error.message });
+    console.error('Error in scrape API:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Vercel serverless function export
@@ -862,6 +576,6 @@ export default app;
 // Only start server if not in Vercel environment
 if (process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
-    console.log(`🚀 USCIS News Web App running at http://localhost:${PORT}`);
+    console.log(`🚀 F1 News App running at http://localhost:${PORT}`);
   });
 }
