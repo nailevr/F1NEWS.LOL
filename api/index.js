@@ -90,16 +90,26 @@ const COUNTRY_FLAGS = {
   'brunei': '🇧🇳'
 };
 
-// Real USCIS news data with AI-generated F1 summaries
-const sampleArticles = [
-  {
-    title: "West Virginia Couple Plead Guilty to Immigration Crimes",
-    url: "https://www.uscis.gov/newsroom/news-releases/west-virginia-couple-plead-guilty-to-immigration-crimes",
-    date: "2025-09-18T18:57:26.000Z",
-    content: "USCIS announces successful prosecution of immigration-related crimes.",
-    countries: [{ name: 'india', flag: '🇮🇳' }],
-    summary: "📅 Sep 18, 2025 | West Virginia Couple Plead Guilty to Immigration Crimes\n🎓 Potential causes for F1 students - This case highlights the importance of maintaining compliance with immigration laws, as violations can lead to increased scrutiny and potential consequences for F1 visa holders."
-  },
+// Load all 72 USCIS articles from localhost data
+let sampleArticles = [];
+
+try {
+  const fs = require('fs');
+  const convertedData = JSON.parse(fs.readFileSync('converted_articles.json', 'utf8'));
+  sampleArticles = convertedData.articles || [];
+  console.log(`Loaded ${sampleArticles.length} USCIS articles with F1 summaries`);
+} catch (error) {
+  console.log('Could not load converted articles, using fallback data');
+  // Fallback to a few articles if file loading fails
+  sampleArticles = [
+    {
+      title: "West Virginia Couple Plead Guilty to Immigration Crimes",
+      url: "https://www.uscis.gov/newsroom/news-releases/west-virginia-couple-plead-guilty-to-immigration-crimes",
+      date: "2025-09-18T18:57:26.000Z",
+      content: "USCIS announces successful prosecution of immigration-related crimes.",
+      countries: [{ name: 'india', flag: '🇮🇳' }],
+      summary: "📅 Sep 18, 2025 | West Virginia Couple Plead Guilty to Immigration Crimes\n🎓 Potential causes for F1 students - This case highlights the importance of maintaining compliance with immigration laws, as violations can lead to increased scrutiny and potential consequences for F1 visa holders."
+    },
   {
     title: "Connecticut Man Sentenced to Prison for Defrauding Immigrant Clients and USCIS",
     url: "https://www.uscis.gov/newsroom/news-releases/connecticut-man-sentenced-to-prison-for-defrauding-immigrant-clients-and-uscis",
@@ -228,7 +238,8 @@ const sampleArticles = [
     countries: [],
     summary: "📅 Jul 15, 2025 | International Student Travel Authorization Changes\n🎓 Potential causes for F1 students - Changes to travel authorization may affect F1 students' ability to travel internationally and re-enter the U.S., including documentation requirements and travel restrictions."
   }
-];
+  ];
+}
 
 // Generate HTML template
 function generateHTML(articles) {
