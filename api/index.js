@@ -1,9 +1,49 @@
 const express = require('express');
-const { loadAllArticles } = require('./data');
-
 const app = express();
 
-// Generate HTML template
+// Simple test with just 3 articles to ensure it works
+const articles = [
+  {
+    title: "West Virginia Couple Plead Guilty to Immigration Crimes",
+    url: "https://www.uscis.gov/newsroom/news-releases/west-virginia-couple-plead-guilty-to-immigration-crimes",
+    date: "2025-09-18T18:57:26.000Z",
+    countries: [{ name: 'india', flag: '🇮🇳' }],
+    summary: "🎓 Sep 18, 2025 | West Virginia Couple Plead Guilty to Immigration Crimes\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    title: "Connecticut Man Sentenced to Prison for Defrauding Immigrant Clients and USCIS",
+    url: "https://www.uscis.gov/newsroom/news-releases/connecticut-man-sentenced-to-prison-for-defrauding-immigrant-clients-and-uscis",
+    date: "2025-09-18T16:26:00.000Z",
+    countries: [],
+    summary: "📋 Sep 18, 2025 | Connecticut Man Sentenced to Prison for Defrauding Immigrant Clients and USCIS\n🎓 Potential causes for F1 students - Highlights importance of maintaining compliance with immigration laws and avoiding fraudulent activities that could jeopardize F1 visa status."
+  },
+  {
+    title: "USCIS Unveils First Changes to Naturalization Test in Multi-Step Overhaul of American Citizenship Standards",
+    url: "https://www.uscis.gov/newsroom/news-releases/uscis-unveils-first-changes-to-naturalization-test-in-multi-step-overhaul-of-american-citizenship",
+    date: "2025-09-17T14:16:34.000Z",
+    countries: [],
+    summary: "📋 Sep 17, 2025 | USCIS Unveils First Changes to Naturalization Test in Multi-Step Overhaul of American Citizenship Standards\n🎓 Potential causes for F1 students - May affect F1 students considering future pathways to citizenship after completing their studies."
+  }
+];
+
+app.get('/', (req, res) => {
+  try {
+    const html = generateHTML(articles);
+    res.send(html);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Internal Server Error: ' + error.message);
+  }
+});
+
+app.get('/api/scrape', (req, res) => {
+  res.json({ 
+    success: true, 
+    articles: articles,
+    count: articles.length
+  });
+});
+
 function generateHTML(articles) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -12,12 +52,7 @@ function generateHTML(articles) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F1 News - USCIS Updates for International Students</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
@@ -25,7 +60,6 @@ function generateHTML(articles) {
             min-height: 100vh;
             line-height: 1.6;
         }
-
         .header {
             background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
@@ -33,7 +67,6 @@ function generateHTML(articles) {
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .header h1 {
             font-size: 2.5rem;
             font-weight: 700;
@@ -43,14 +76,12 @@ function generateHTML(articles) {
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
         .header p {
             font-size: 1.1rem;
             color: #cccccc;
             max-width: 600px;
             margin: 0 auto;
         }
-
         .stats {
             display: flex;
             justify-content: center;
@@ -58,7 +89,6 @@ function generateHTML(articles) {
             margin: 30px 0;
             flex-wrap: wrap;
         }
-
         .stat-item {
             background: rgba(255, 255, 255, 0.1);
             padding: 15px 25px;
@@ -68,27 +98,23 @@ function generateHTML(articles) {
             text-align: center;
             min-width: 120px;
         }
-
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
             color: #00d4ff;
             display: block;
         }
-
         .stat-label {
             font-size: 0.9rem;
             color: #cccccc;
             margin-top: 5px;
         }
-
         .timeline {
             max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px;
             position: relative;
         }
-
         .timeline-line {
             position: absolute;
             left: 200px;
@@ -97,7 +123,6 @@ function generateHTML(articles) {
             width: 4px;
             background: #ffffff;
         }
-
         .timeline-line-right {
             position: absolute;
             right: 200px;
@@ -106,7 +131,6 @@ function generateHTML(articles) {
             width: 4px;
             background: #ffffff;
         }
-
         .timeline-item {
             position: relative;
             margin-bottom: 80px;
@@ -115,11 +139,9 @@ function generateHTML(articles) {
             border-bottom: 1px dashed #ffffff;
             z-index: 1;
         }
-
         .timeline-item:last-child {
             border-bottom: none;
         }
-
         .timeline-dot {
             position: absolute;
             left: 200px;
@@ -132,7 +154,6 @@ function generateHTML(articles) {
             border-radius: 50%;
             z-index: 20;
         }
-
         .timeline-date {
             position: absolute;
             left: 80px;
@@ -147,14 +168,12 @@ function generateHTML(articles) {
             border-radius: 4px;
             white-space: nowrap;
         }
-
         .timeline-content {
             position: relative;
             left: 220px;
             right: 260px;
             z-index: 0;
         }
-
         .timeline-rectangle {
             background: rgba(255, 255, 255, 0.1);
             padding: 25px;
@@ -162,17 +181,14 @@ function generateHTML(articles) {
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
         .timeline-clickable {
             text-decoration: none;
             display: block;
             transition: background-color 0.3s ease;
         }
-
         .timeline-clickable:hover {
             background-color: #333333;
         }
-
         .timeline-title {
             font-size: 1.2rem;
             font-weight: 600;
@@ -180,7 +196,6 @@ function generateHTML(articles) {
             margin-bottom: 10px;
             line-height: 1.4;
         }
-
         .timeline-summary {
             font-size: 0.6rem;
             line-height: 1.3;
@@ -188,7 +203,6 @@ function generateHTML(articles) {
             margin-top: 5px;
             white-space: pre-line;
         }
-
         .timeline-flags {
             position: absolute;
             right: 100px;
@@ -203,48 +217,6 @@ function generateHTML(articles) {
             font-size: 0.8rem;
             z-index: 10;
             white-space: nowrap;
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .stats {
-                gap: 15px;
-            }
-            
-            .stat-item {
-                padding: 10px 15px;
-                min-width: 100px;
-            }
-            
-            .timeline-line {
-                left: 100px;
-            }
-            
-            .timeline-line-right {
-                right: 100px;
-            }
-            
-            .timeline-dot {
-                left: 100px;
-            }
-            
-            .timeline-date {
-                left: 50px;
-                font-size: 0.7rem;
-            }
-            
-            .timeline-content {
-                left: 120px;
-                right: 120px;
-            }
-            
-            .timeline-flags {
-                right: 50px;
-                font-size: 0.7rem;
-            }
         }
     </style>
 </head>
@@ -313,37 +285,4 @@ function generateHTML(articles) {
 </html>`;
 }
 
-// Routes
-app.get('/', (req, res) => {
-  try {
-    const articles = loadAllArticles();
-    const html = generateHTML(articles);
-    res.send(html);
-  } catch (error) {
-    console.error('Error generating HTML:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-app.get('/api/scrape', (req, res) => {
-  try {
-    const articles = loadAllArticles();
-    res.json({ 
-      success: true, 
-      message: 'Articles loaded successfully',
-      articles: articles,
-      summaries: {}
-    });
-  } catch (error) {
-    console.error('Error in scrape API:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// Vercel serverless function export
 module.exports = app;
