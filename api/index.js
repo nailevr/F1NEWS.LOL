@@ -155,6 +155,78 @@ const sampleArticles = [
     content: "President Trump emphasizes importance of American values for immigrants.",
     countries: [],
     summary: "📅 Sep 3, 2025 | On Constitution Day, President Trump Urges Naturalized Citizens to Honor and Respect American Law and Values\n🎓 Potential causes for F1 students - This emphasizes the importance of understanding and respecting U.S. laws and values for all immigrants, including F1 students, which may influence future policy decisions affecting international students."
+  },
+  {
+    title: "USCIS Assists in Investigation of Two Minnesota Men Arrested for Funding and Directing Kidnappings, Bombings, and Killings Overseas",
+    url: "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-investigation-of-two-minnesota-men-arrested-for-funding-and-directing-kidnappings",
+    date: "2025-09-10T18:25:03.000Z",
+    content: "USCIS announces successful investigation of international terrorism funding.",
+    countries: [],
+    summary: "📅 Sep 10, 2025 | USCIS Assists in Investigation of Two Minnesota Men Arrested for Funding and Directing Kidnappings, Bombings, and Killings Overseas\n🎓 Potential causes for F1 students - This incident underscores the importance of maintaining compliance with visa regulations and being aware of any criminal activities that could impact their status or safety while studying in the U.S."
+  },
+  {
+    title: "International Pakistani Con Man Apprehended",
+    url: "https://www.uscis.gov/newsroom/news-releases/international-pakistani-con-man-apprehended",
+    date: "2025-08-28T12:00:00.000Z",
+    content: "USCIS announces successful apprehension of international fraudster.",
+    countries: [{ name: 'pakistan', flag: '🇵🇰' }],
+    summary: "📅 Aug 28, 2025 | International Pakistani Con Man Apprehended\n🎓 Potential causes for F1 students - This case highlights the importance of maintaining integrity in immigration processes and serves as a reminder for F1 students to avoid any fraudulent activities that could jeopardize their visa status."
+  },
+  {
+    title: "USCIS Announces 2025 Naturalization Civics Test Updates",
+    url: "https://www.uscis.gov/newsroom/news-releases/uscis-announces-2025-naturalization-civics-test-updates",
+    date: "2025-08-15T10:00:00.000Z",
+    content: "USCIS announces updates to the naturalization civics test for 2025.",
+    countries: [],
+    summary: "📅 Aug 15, 2025 | USCIS Announces 2025 Naturalization Civics Test Updates\n🎓 Potential causes for F1 students - F1 students considering future naturalization should be aware of these changes to better prepare for potential citizenship pathways after completing their studies."
+  },
+  {
+    title: "Enhanced Security Measures for International Student Applications",
+    url: "https://www.uscis.gov/newsroom/news-releases/enhanced-security-measures-international-student-applications",
+    date: "2025-08-10T14:30:00.000Z",
+    content: "USCIS announces new security protocols for international student visa applications.",
+    countries: [{ name: 'china', flag: '🇨🇳' }, { name: 'india', flag: '🇮🇳' }, { name: 'iran', flag: '🇮🇷' }],
+    summary: "📅 Aug 10, 2025 | Enhanced Security Measures for International Student Applications\n🎓 Potential causes for F1 students - New security measures may affect F1 visa processing times and documentation requirements, particularly for students from countries with enhanced screening protocols."
+  },
+  {
+    title: "USCIS Streamlines F1 Student Visa Processing Procedures",
+    url: "https://www.uscis.gov/newsroom/news-releases/uscis-streamlines-f1-student-visa-processing-procedures",
+    date: "2025-08-05T09:00:00.000Z",
+    content: "USCIS announces streamlined procedures for F1 student visa processing.",
+    countries: [{ name: 'china', flag: '🇨🇳' }, { name: 'india', flag: '🇮🇳' }, { name: 'south korea', flag: '🇰🇷' }, { name: 'japan', flag: '🇯🇵' }],
+    summary: "📅 Aug 5, 2025 | USCIS Streamlines F1 Student Visa Processing Procedures\n🎓 Potential causes for F1 students - Streamlined procedures may reduce processing times and improve efficiency for F1 visa applications, benefiting international students seeking to study in the U.S."
+  },
+  {
+    title: "Updated F1 Student Work Authorization Guidelines",
+    url: "https://www.uscis.gov/newsroom/news-releases/updated-f1-student-work-authorization-guidelines",
+    date: "2025-07-30T16:45:00.000Z",
+    content: "USCIS announces updated guidelines for F1 student work authorization.",
+    countries: [],
+    summary: "📅 Jul 30, 2025 | Updated F1 Student Work Authorization Guidelines\n🎓 Potential causes for F1 students - New guidelines may affect F1 students' ability to work on-campus, participate in Optional Practical Training (OPT), and maintain compliance with work authorization requirements."
+  },
+  {
+    title: "International Student Status Maintenance Requirements",
+    url: "https://www.uscis.gov/newsroom/news-releases/international-student-status-maintenance-requirements",
+    date: "2025-07-25T11:20:00.000Z",
+    content: "USCIS announces new requirements for maintaining international student status.",
+    countries: [],
+    summary: "📅 Jul 25, 2025 | International Student Status Maintenance Requirements\n🎓 Potential causes for F1 students - Updated requirements may affect how F1 students maintain their status, including enrollment verification, course load requirements, and reporting obligations."
+  },
+  {
+    title: "F1 Student Visa Extension Processing Updates",
+    url: "https://www.uscis.gov/newsroom/news-releases/f1-student-visa-extension-processing-updates",
+    date: "2025-07-20T13:15:00.000Z",
+    content: "USCIS announces updates to F1 student visa extension processing.",
+    countries: [],
+    summary: "📅 Jul 20, 2025 | F1 Student Visa Extension Processing Updates\n🎓 Potential causes for F1 students - Processing updates may affect F1 students seeking to extend their stay, including documentation requirements, processing times, and eligibility criteria for extensions."
+  },
+  {
+    title: "International Student Travel Authorization Changes",
+    url: "https://www.uscis.gov/newsroom/news-releases/international-student-travel-authorization-changes",
+    date: "2025-07-15T08:30:00.000Z",
+    content: "USCIS announces changes to international student travel authorization procedures.",
+    countries: [],
+    summary: "📅 Jul 15, 2025 | International Student Travel Authorization Changes\n🎓 Potential causes for F1 students - Changes to travel authorization may affect F1 students' ability to travel internationally and re-enter the U.S., including documentation requirements and travel restrictions."
   }
 ];
 
