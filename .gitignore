@@ -4,7 +4,7 @@ node_modules/
 .env.production
 *.log
 *.csv
-*.json
+uscis_news_data.json
 .DS_Store
 __pycache__/
 *.pyc
