@@ -1,0 +1,745 @@
+#!/usr/bin/env python3
+"""
+Search Interface for F1 News
+Provides a command-line and web interface to search F1 news by country
+"""
+
+import json
+import pandas as pd
+from typing import List, Dict, Any, Optional
+import argparse
+from datetime import datetime
+import os
+import webbrowser
+from flask import Flask, render_template, request, jsonify
+
+class F1NewsSearcher:
+    def __init__(self, data_file: str = None):
+        self.data_file = data_file
+        self.f1_news = []
+        self.country_db = {}
+        
+        if data_file and os.path.exists(data_file):
+            self.load_data(data_file)
+    
+    def load_data(self, data_file: str):
+        """Load F1 news data from JSON file"""
+        try:
+            with open(data_file, 'r', encoding='utf-8') as f:
+                self.f1_news = json.load(f)
+            
+            # Recreate country database
+            self.country_db = self.create_country_database()
+            print(f"Loaded {len(self.f1_news)} F1 news articles")
+            
+        except Exception as e:
+            print(f"Error loading data: {str(e)}")
+    
+    def create_country_database(self) -> Dict[str, List[Dict[str, Any]]]:
+        """Create searchable database by country"""
+        country_db = {}
+        
+        for article in self.f1_news:
+            for country in article.get('countries', []):
+                if country not in country_db:
+                    country_db[country] = []
+                country_db[country].append(article)
+        
+        return country_db
+    
+    def search_by_country(self, country: str) -> List[Dict[str, Any]]:
+        """Search news by country"""
+        country_lower = country.lower()
+        
+        # Try exact match first
+        if country_lower.title() in self.country_db:
+            return self.country_db[country_lower.title()]
+        
+        # Try case-insensitive match
+        results = []
+        for db_country, articles in self.country_db.items():
+            if country_lower in db_country.lower():
+                results.extend(articles)
+        
+        return results
+    
+    def search_by_keyword(self, keyword: str) -> List[Dict[str, Any]]:
+        """Search news by keyword"""
+        keyword_lower = keyword.lower()
+        results = []
+        
+        for article in self.f1_news:
+            full_text = f"{article['title']} {article['content']} {article.get('summary', '')}"
+            if keyword_lower in full_text.lower():
+                results.append(article)
+        
+        return results
+    
+    def get_all_countries(self) -> List[str]:
+        """Get list of all countries with F1 news"""
+        return sorted(list(self.country_db.keys()))
+    
+    def get_recent_news(self, days: int = 30) -> List[Dict[str, Any]]:
+        """Get recent news within specified days"""
+        from datetime import datetime, timedelta
+        
+        cutoff_date = datetime.now() - timedelta(days=days)
+        recent_news = []
+        
+        for article in self.f1_news:
+            try:
+                if article.get('date'):
+                    # Try to parse date
+                    article_date = datetime.strptime(article['date'], '%Y-%m-%d')
+                    if article_date >= cutoff_date:
+                        recent_news.append(article)
+            except:
+                # If date parsing fails, include the article
+                recent_news.append(article)
+        
+        return recent_news
+    
+    def display_results(self, results: List[Dict[str, Any]], limit: int = 10):
+        """Display search results in a formatted way"""
+        if not results:
+            print("No results found.")
+            return
+        
+        print(f"\nFound {len(results)} results:")
+        print("=" * 80)
+        
+        for i, article in enumerate(results[:limit]):
+            print(f"\n{i+1}. {article['title']}")
+            print(f"   URL: {article['url']}")
+            print(f"   Date: {article.get('date', 'Unknown')}")
+            print(f"   Countries: {', '.join(article.get('countries', []))}")
+            print(f"   Summary: {article.get('summary', 'No summary available')[:200]}...")
+            print("-" * 80)
+
+def create_web_interface(searcher: F1NewsSearcher):
+    """Create Flask web interface for searching"""
+    app = Flask(__name__)
+    
+    @app.route('/')
+    def index():
+        countries = searcher.get_all_countries()
+        all_today_news = searcher.f1_news  # Get all today's news
+        return render_template('index.html', countries=countries, all_today_news=all_today_news)
+    
+    @app.route('/search')
+    def search():
+        query = request.args.get('q', '')
+        country = request.args.get('country', '')
+        
+        results = []
+        if country:
+            results = searcher.search_by_country(country)
+        elif query:
+            results = searcher.search_by_keyword(query)
+        
+        return jsonify({
+            'results': results,
+            'total': len(results)
+        })
+    
+    @app.route('/countries')
+    def countries():
+        return jsonify(searcher.get_all_countries())
+    
+    return app
+
+def main():
+    parser = argparse.ArgumentParser(description='F1 News Searcher')
+    parser.add_argument('--data', help='Path to F1 news JSON file')
+    parser.add_argument('--country', help='Search by country')
+    parser.add_argument('--keyword', help='Search by keyword')
+    parser.add_argument('--web', action='store_true', help='Start web interface')
+    parser.add_argument('--recent', type=int, help='Show recent news (days)')
+    parser.add_argument('--list-countries', action='store_true', help='List all countries')
+    
+    args = parser.parse_args()
+    
+    # Find the most recent data file if not specified
+    if not args.data:
+        json_files = [f for f in os.listdir('.') if f.startswith('f1_news_') and f.endswith('.json')]
+        if json_files:
+            args.data = sorted(json_files)[-1]  # Get most recent file
+        else:
+            print("No F1 news data file found. Please run the scraper first.")
+            return
+    
+    searcher = F1NewsSearcher(args.data)
+    
+    if args.web:
+        # Create HTML template
+        os.makedirs('templates', exist_ok=True)
+        
+        html_template = '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Student News Search</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #000; 
+            color: #fff; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            color: #00ff88;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            color: #ccc;
+            opacity: 0.8;
+        }
+        
+        .chat-bubble {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #00ff88;
+            border-radius: 25px;
+            padding: 30px 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1);
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .chat-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 15px solid #00ff88;
+        }
+        
+        .chat-bubble h2 {
+            color: #00ff88;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .country-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .country-input:focus {
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+        
+        .country-input::placeholder {
+            color: #888;
+        }
+        
+        .search-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            border: none;
+            border-radius: 15px;
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .search-btn:hover {
+            background: linear-gradient(135deg, #00cc6a, #00aa55);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+        
+        .results {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 30px;
+        }
+        
+        .result-item {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .result-item:hover {
+            border-color: #00ff88;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.1);
+        }
+        
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .result-meta {
+            color: #aaa;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .result-date {
+            color: #00ff88;
+            font-weight: bold;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 3px 8px;
+            border-radius: 8px;
+            border: 1px solid #00ff88;
+        }
+        
+        .result-meta a {
+            color: #00ff88;
+            text-decoration: none;
+        }
+        
+        .result-meta a:hover {
+            text-decoration: underline;
+        }
+        
+        .countries-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .country-tag {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .result-summary {
+            line-height: 1.6;
+            color: #ddd;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #00ff88;
+            font-size: 1.2rem;
+            padding: 40px;
+        }
+        
+        .no-results {
+            text-align: center;
+            color: #888;
+            font-size: 1.1rem;
+            padding: 40px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 30px;
+            opacity: 0.7;
+        }
+        
+        .country-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        
+        .suggestion-tag {
+            background: #333;
+            color: #00ff88;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #555;
+        }
+        
+        .suggestion-tag:hover {
+            background: #00ff88;
+            color: #000;
+            transform: scale(1.05);
+        }
+        
+        .today-news {
+            width: 100%;
+            max-width: 900px;
+            margin-top: 30px;
+        }
+        
+        .news-bullets {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .news-bullet-item {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .news-bullet-item:hover {
+            border-color: #00ff88;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.1);
+        }
+        
+        .news-bullet-item::before {
+            content: '•';
+            position: absolute;
+            left: -10px;
+            top: 20px;
+            color: #00ff88;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .bullet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+        
+        .bullet-title {
+            color: #00ff88;
+            font-size: 1.1rem;
+            font-weight: bold;
+            flex: 1;
+            line-height: 1.4;
+        }
+        
+        .bullet-date {
+            color: #00ff88;
+            font-weight: bold;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 3px 8px;
+            border-radius: 8px;
+            border: 1px solid #00ff88;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .bullet-countries {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        
+        .country-tag-small {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .bullet-content {
+            color: #ddd;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        
+        .bullet-link {
+            text-align: right;
+        }
+        
+        .bullet-link a {
+            color: #00ff88;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border: 1px solid #00ff88;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .bullet-link a:hover {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        .no-news-message {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .no-news-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Hello F1 Student</h1>
+        <p>Find today's F1 student news from USCIS</p>
+    </div>
+    
+    <div class="chat-bubble fade-in">
+        <h2>Where are you from?</h2>
+        <div class="welcome-message">
+            Select your country to find today's F1 student news and updates
+        </div>
+        
+        <input type="text" id="country-input" class="country-input" placeholder="Type your country name here..." autocomplete="off">
+        
+        <div class="country-suggestions">
+            <span class="suggestion-tag" onclick="selectCountry('China')">China</span>
+            <span class="suggestion-tag" onclick="selectCountry('India')">India</span>
+            <span class="suggestion-tag" onclick="selectCountry('Brazil')">Brazil</span>
+            <span class="suggestion-tag" onclick="selectCountry('Mexico')">Mexico</span>
+            <span class="suggestion-tag" onclick="selectCountry('Nigeria')">Nigeria</span>
+            <span class="suggestion-tag" onclick="selectCountry('Germany')">Germany</span>
+            <span class="suggestion-tag" onclick="selectCountry('Vietnam')">Vietnam</span>
+            <span class="suggestion-tag" onclick="selectCountry('Philippines')">Philippines</span>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="search-btn" onclick="performSearch()" style="flex: 1;">Search F1 News</button>
+            <button class="search-btn" onclick="showTodayNews()" style="flex: 1; background: linear-gradient(135deg, #666, #888);">Show All Today's News</button>
+        </div>
+    </div>
+    
+    <div id="search-results" class="results hidden"></div>
+    
+    <!-- Today's F1 News Summary -->
+    <div id="today-news-summary" class="today-news">
+        <h2 style="color: #00ff88; margin-bottom: 20px; text-align: center;">Today's F1 Student News Summary</h2>
+        {% if all_today_news %}
+        <div class="news-bullets">
+            {% for article in all_today_news %}
+            <div class="news-bullet-item">
+                <div class="bullet-date">{{ article.date or 'Date not available' }}</div>
+                <div class="bullet-header">
+                    <span class="bullet-title">{{ article.title }}</span>
+                    <span class="bullet-countries">
+                        {% for country in article.countries %}
+                        <span class="country-tag-small">{{ country }}</span>
+                        {% endfor %}
+                    </span>
+                </div>
+                <div class="bullet-content">{{ article.summary }}</div>
+                <div class="bullet-link">
+                    <a href="{{ article.url }}" target="_blank">Read Full Article</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-news-message">
+            <div class="no-news-icon">📰</div>
+            <h3 style="color: #00ff88; margin-bottom: 15px;">No F1 Student News for Today</h3>
+            <p style="color: #aaa; text-align: center; font-size: 1.1rem;">
+                There are no F1 student-related news articles from USCIS today.<br>
+                Check back tomorrow for the latest updates!
+            </p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <script>
+        function selectCountry(country) {
+            document.getElementById('country-input').value = country;
+        }
+        
+        function performSearch() {
+            const country = document.getElementById('country-input').value.trim();
+            const resultsDiv = document.getElementById('search-results');
+            const todayNewsDiv = document.getElementById('today-news-summary');
+            
+            if (!country) {
+                alert('Please enter or select your country');
+                return;
+            }
+            
+            // Hide today's news summary and show search results
+            todayNewsDiv.style.display = 'none';
+            resultsDiv.innerHTML = '<div class="loading">Searching for F1 news from ' + country + '...</div>';
+            resultsDiv.classList.remove('hidden');
+            
+            let url = '/search?country=' + encodeURIComponent(country);
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    displayResults(data.results, country);
+                })
+                .catch(error => {
+                    resultsDiv.innerHTML = '<div class="no-results">Error searching: ' + error + '</div>';
+                });
+        }
+        
+        function showTodayNews() {
+            const resultsDiv = document.getElementById('search-results');
+            const todayNewsDiv = document.getElementById('today-news-summary');
+            
+            // Hide search results and show today's news
+            resultsDiv.classList.add('hidden');
+            todayNewsDiv.style.display = 'block';
+            
+            // Clear the search input
+            document.getElementById('country-input').value = '';
+        }
+        
+        function displayResults(results, country) {
+            const resultsDiv = document.getElementById('search-results');
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results">No F1 news found for ' + country + ' today.</div>';
+                return;
+            }
+            
+            let html = '<h2 style="color: #00ff88; margin-bottom: 20px; text-align: center;">F1 News for ' + country + ' (' + results.length + ' articles)</h2>';
+            
+            results.forEach((article, index) => {
+                html += '<div class="result-item fade-in" style="animation-delay: ' + (index * 0.1) + 's">';
+                html += '<div class="result-title">' + article.title + '</div>';
+                html += '<div class="result-meta">';
+                html += '<span class="result-date">' + (article.date || 'Date not available') + '</span>';
+                html += '<a href="' + article.url + '" target="_blank">Read Full Article</a>';
+                html += '</div>';
+                
+                if (article.countries && article.countries.length > 0) {
+                    html += '<div class="countries-list">';
+                    article.countries.forEach(country => {
+                        html += '<span class="country-tag">' + country + '</span>';
+                    });
+                    html += '</div>';
+                }
+                
+                html += '<div class="result-summary">' + (article.summary || 'No summary available') + '</div>';
+                html += '</div>';
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Allow Enter key to trigger search
+        document.getElementById('country-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        // Auto-focus on the input field
+        document.getElementById('country-input').focus();
+    </script>
+</body>
+</html>
+        '''
+        
+        with open('templates/index.html', 'w', encoding='utf-8') as f:
+            f.write(html_template)
+        
+        print("Starting web interface...")
+        print("Open your browser to: http://localhost:5003")
+        webbrowser.open('http://localhost:5003')
+        app = create_web_interface(searcher)
+        app.run(debug=True, port=5003)
+    
+    elif args.list_countries:
+        countries = searcher.get_all_countries()
+        print(f"Countries with F1 news ({len(countries)}):")
+        for country in countries:
+            print(f"  - {country}")
+    
+    elif args.country:
+        results = searcher.search_by_country(args.country)
+        searcher.display_results(results)
+    
+    elif args.keyword:
+        results = searcher.search_by_keyword(args.keyword)
+        searcher.display_results(results)
+    
+    elif args.recent:
+        results = searcher.get_recent_news(args.recent)
+        searcher.display_results(results)
+    
+    else:
+        print("Use --help to see available options")
+        print(f"Loaded {len(searcher.f1_news)} F1 news articles")
+        print(f"Countries available: {len(searcher.get_all_countries())}")
+
+if __name__ == "__main__":
+    main()
