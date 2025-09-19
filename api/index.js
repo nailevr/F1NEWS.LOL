@@ -1,4 +1,4 @@
-import express from 'express';
+const express = require('express');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -850,7 +850,6 @@ const sampleArticles = [
     "summary": "📋 Jan 22, 2025 | USCIS Waives COVID-19 Vaccination Requirement for Adjustment of Status Applicants\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
   }
 ];
-}
 
 // Generate HTML template
 function generateHTML(articles) {
@@ -1291,7 +1290,7 @@ app.get('/health', (req, res) => {
 });
 
 // Vercel serverless function export
-export default app;
+module.exports = app;
 
 // Only start server if not in Vercel environment
 if (process.env.VERCEL !== '1') {
