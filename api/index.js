@@ -90,155 +90,766 @@ const COUNTRY_FLAGS = {
   'brunei': '🇧🇳'
 };
 
-// Load all 72 USCIS articles from localhost data
-let sampleArticles = [];
-
-try {
-  const fs = require('fs');
-  const convertedData = JSON.parse(fs.readFileSync('converted_articles.json', 'utf8'));
-  sampleArticles = convertedData.articles || [];
-  console.log(`Loaded ${sampleArticles.length} USCIS articles with F1 summaries`);
-} catch (error) {
-  console.log('Could not load converted articles, using fallback data');
-  // Fallback to a few articles if file loading fails
-  sampleArticles = [
-    {
-      title: "West Virginia Couple Plead Guilty to Immigration Crimes",
-      url: "https://www.uscis.gov/newsroom/news-releases/west-virginia-couple-plead-guilty-to-immigration-crimes",
-      date: "2025-09-18T18:57:26.000Z",
-      content: "USCIS announces successful prosecution of immigration-related crimes.",
-      countries: [{ name: 'india', flag: '🇮🇳' }],
-      summary: "📅 Sep 18, 2025 | West Virginia Couple Plead Guilty to Immigration Crimes\n🎓 Potential causes for F1 students - This case highlights the importance of maintaining compliance with immigration laws, as violations can lead to increased scrutiny and potential consequences for F1 visa holders."
-    },
+// All 72 USCIS articles embedded directly for Vercel deployment
+const sampleArticles = [
   {
-    title: "Connecticut Man Sentenced to Prison for Defrauding Immigrant Clients and USCIS",
-    url: "https://www.uscis.gov/newsroom/news-releases/connecticut-man-sentenced-to-prison-for-defrauding-immigrant-clients-and-uscis",
-    date: "2025-09-18T16:26:00.000Z",
-    content: "USCIS announces successful prosecution of immigration fraud.",
-    countries: [],
-    summary: "📅 Sep 18, 2025 | Connecticut Man Sentenced to Prison for Defrauding Immigrant Clients and USCIS\n🎓 Potential causes for F1 students - F1 students should be cautious of fraudulent services that may jeopardize their visa status and future immigration benefits."
+    "title": "West Virginia Couple Plead Guilty to Immigration Crimes",
+    "url": "https://www.uscis.gov/newsroom/news-releases/west-virginia-couple-plead-guilty-to-immigration-crimes",
+    "date": "2025-09-18T18:57:26.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "india",
+        "flag": "🇮🇳"
+      }
+    ],
+    "summary": "🎓 Sep 18, 2025 | West Virginia Couple Plead Guilty to Immigration Crimes\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
   },
   {
-    title: "USCIS Unveils First Changes to Naturalization Test in Multi-Step Overhaul of American Citizenship Standards",
-    url: "https://www.uscis.gov/newsroom/news-releases/uscis-unveils-first-changes-to-naturalization-test-in-multi-step-overhaul-of-american-citizenship",
-    date: "2025-09-17T14:16:34.000Z",
-    content: "USCIS announces major changes to the naturalization test process.",
-    countries: [],
-    summary: "📅 Sep 17, 2025 | USCIS Unveils First Changes to Naturalization Test in Multi-Step Overhaul of American Citizenship Standards\n🎓 Potential causes for F1 students - Changes to the naturalization test may indirectly affect F1 students considering pathways to citizenship after their studies, emphasizing the importance of understanding evolving citizenship requirements."
+    "title": "Connecticut Man Sentenced to Prison for Defrauding Immigrant Clients and USCIS",
+    "url": "https://www.uscis.gov/newsroom/news-releases/connecticut-man-sentenced-to-prison-for-defrauding-immigrant-clients-and-uscis",
+    "date": "2025-09-18T16:26:00.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Sep 18, 2025 | Connecticut Man Sentenced to Prison for Defrauding Immigrant Clients and USCIS\n🎓 Potential causes for F1 students - Highlights importance of maintaining compliance with immigration laws and avoiding fraudulent activities that could jeopardize F1 visa status."
   },
   {
-    title: "USCIS Reaches H-2B Cap for First Half of Fiscal Year 2026",
-    url: "https://www.uscis.gov/newsroom/alerts/uscis-reaches-h-2b-cap-for-first-half-of-fiscal-year-2026",
-    date: "2025-09-16T15:16:51.000Z",
-    content: "USCIS announces H-2B visa cap reached for first half of fiscal year 2026.",
-    countries: [],
-    summary: "📅 Sep 16, 2025 | USCIS Reaches H-2B Cap for First Half of Fiscal Year 2026\n🎓 Potential causes for F1 students - The reaching of the H-2B cap may limit employment opportunities for F1 students seeking practical training or internships in seasonal jobs."
+    "title": "USCIS Unveils First Changes to Naturalization Test in Multi-Step Overhaul of American Citizenship Standards",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-unveils-first-changes-to-naturalization-test-in-multi-step-overhaul-of-american-citizenship",
+    "date": "2025-09-17T14:16:34.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Sep 17, 2025 | USCIS Unveils First Changes to Naturalization Test in Multi-Step Overhaul of American Citizenship Standards\n🎓 Potential causes for F1 students - May affect F1 students considering future pathways to citizenship after completing their studies."
   },
   {
-    title: "DHS Terminates 2021 Designation of Venezuela for Temporary Protected Status",
-    url: "https://www.uscis.gov/newsroom/alerts/dhs-terminates-2021-designation-of-venezuela-for-temporary-protected-status",
-    date: "2025-09-05T13:13:10.000Z",
-    content: "DHS terminates Temporary Protected Status designation for Venezuela.",
-    countries: [{ name: 'venezuela', flag: '🇻🇪' }],
-    summary: "📅 Sep 5, 2025 | DHS Terminates 2021 Designation of Venezuela for Temporary Protected Status\n🎓 Potential causes for F1 students - The termination of Temporary Protected Status (TPS) for Venezuelan nationals may affect F1 students from Venezuela, as they could lose certain protections and face challenges in maintaining their visa status if they cannot return to their home country safely."
+    "title": "USCIS Reaches H-2B Cap for First Half of Fiscal Year 2026",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-reaches-h-2b-cap-for-first-half-of-fiscal-year-2026",
+    "date": "2025-09-16T15:16:51.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Sep 16, 2025 | USCIS Reaches H-2B Cap for First Half of Fiscal Year 2026\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
   },
   {
-    title: "Twelve People Charged for Their Roles in International Alien Smuggling, Asylum Fraud, and Money Laundering Conspiracies",
-    url: "https://www.uscis.gov/newsroom/news-releases/twelve-people-charged-for-their-roles-in-international-alien-smuggling-asylum-fraud-and-money",
-    date: "2025-09-04T21:45:59.000Z",
-    content: "USCIS announces major international smuggling and fraud investigation.",
-    countries: [{ name: 'mexico', flag: '🇲🇽' }, { name: 'lebanon', flag: '🇱🇧' }, { name: 'colombia', flag: '🇨🇴' }],
-    summary: "📅 Sep 4, 2025 | Twelve People Charged for Their Roles in International Alien Smuggling, Asylum Fraud, and Money Laundering Conspiracies\n🎓 Potential causes for F1 students - This news highlights the risks associated with fraudulent activities that could impact the integrity of the F1 visa program and lead to increased scrutiny of international students."
+    "title": "USCIS Assists in Investigation of Two Minnesota Men Arrested for Funding and Directing Kidnappings, Bombings, and Killings Overseas",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-investigation-of-two-minnesota-men-arrested-for-funding-and-directing-kidnappings",
+    "date": "2025-09-10T18:25:03.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Sep 10, 2025 | USCIS Assists in Investigation of Two Minnesota Men Arrested for Funding and Directing Kidnappings, Bombings, and Killings Overseas\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
   },
   {
-    title: "USCIS to Add Special Agents with New Law Enforcement Authorities",
-    url: "https://www.uscis.gov/newsroom/news-releases/uscis-to-add-special-agents-with-new-law-enforcement-authorities",
-    date: "2025-09-04T13:00:55.000Z",
-    content: "USCIS announces expansion of law enforcement capabilities.",
-    countries: [],
-    summary: "📅 Sep 4, 2025 | USCIS to Add Special Agents with New Law Enforcement Authorities\n🎓 Potential causes for F1 students - The addition of special agents with enhanced law enforcement powers may lead to increased scrutiny of F1 students' compliance with visa regulations."
+    "title": "DHS Terminates 2021 Designation of Venezuela for Temporary Protected Status",
+    "url": "https://www.uscis.gov/newsroom/alerts/dhs-terminates-2021-designation-of-venezuela-for-temporary-protected-status",
+    "date": "2025-09-05T13:13:10.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "venezuela",
+        "flag": "🇻🇪"
+      }
+    ],
+    "summary": "📋 Sep 5, 2025 | DHS Terminates 2021 Designation of Venezuela for Temporary Protected Status\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
   },
   {
-    title: "On Constitution Day, President Trump Urges Naturalized Citizens to Honor and Respect American Law and Values",
-    url: "https://www.uscis.gov/newsroom/news-releases/on-constitution-day-president-trump-urges-naturalized-citizens-to-honor-and-respect-american-law-and",
-    date: "2025-09-03T14:30:00.000Z",
-    content: "President Trump emphasizes importance of American values for immigrants.",
-    countries: [],
-    summary: "📅 Sep 3, 2025 | On Constitution Day, President Trump Urges Naturalized Citizens to Honor and Respect American Law and Values\n🎓 Potential causes for F1 students - This emphasizes the importance of understanding and respecting U.S. laws and values for all immigrants, including F1 students, which may influence future policy decisions affecting international students."
+    "title": "Twelve People Charged for Their Roles in International Alien Smuggling, Asylum Fraud, and Money Laundering Conspiracies",
+    "url": "https://www.uscis.gov/newsroom/news-releases/twelve-people-charged-for-their-roles-in-international-alien-smuggling-asylum-fraud-and-money",
+    "date": "2025-09-04T21:45:59.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "mexico",
+        "flag": "🇲🇽"
+      },
+      {
+        "name": "lebanon",
+        "flag": "🇱🇧"
+      },
+      {
+        "name": "colombia",
+        "flag": "🇨🇴"
+      },
+      {
+        "name": "cuba",
+        "flag": "🇨🇺"
+      },
+      {
+        "name": "guatemala",
+        "flag": "🇬🇹"
+      },
+      {
+        "name": "honduras",
+        "flag": "🇭🇳"
+      },
+      {
+        "name": "el salvador",
+        "flag": "🇸🇻"
+      },
+      {
+        "name": "panama",
+        "flag": "🇵🇦"
+      }
+    ],
+    "summary": "🎓 Sep 4, 2025 | Twelve People Charged for Their Roles in International Alien Smuggling, Asylum Fraud, and Money Laundering Conspiracies\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
   },
   {
-    title: "USCIS Assists in Investigation of Two Minnesota Men Arrested for Funding and Directing Kidnappings, Bombings, and Killings Overseas",
-    url: "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-investigation-of-two-minnesota-men-arrested-for-funding-and-directing-kidnappings",
-    date: "2025-09-10T18:25:03.000Z",
-    content: "USCIS announces successful investigation of international terrorism funding.",
-    countries: [],
-    summary: "📅 Sep 10, 2025 | USCIS Assists in Investigation of Two Minnesota Men Arrested for Funding and Directing Kidnappings, Bombings, and Killings Overseas\n🎓 Potential causes for F1 students - This incident underscores the importance of maintaining compliance with visa regulations and being aware of any criminal activities that could impact their status or safety while studying in the U.S."
+    "title": "USCIS to Add Special Agents with New Law Enforcement Authorities",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-to-add-special-agents-with-new-law-enforcement-authorities",
+    "date": "2025-09-04T13:00:55.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Sep 4, 2025 | USCIS to Add Special Agents with New Law Enforcement Authorities\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
   },
   {
-    title: "International Pakistani Con Man Apprehended",
-    url: "https://www.uscis.gov/newsroom/news-releases/international-pakistani-con-man-apprehended",
-    date: "2025-08-28T12:00:00.000Z",
-    content: "USCIS announces successful apprehension of international fraudster.",
-    countries: [{ name: 'pakistan', flag: '🇵🇰' }],
-    summary: "📅 Aug 28, 2025 | International Pakistani Con Man Apprehended\n🎓 Potential causes for F1 students - This case highlights the importance of maintaining integrity in immigration processes and serves as a reminder for F1 students to avoid any fraudulent activities that could jeopardize their visa status."
+    "title": "DHS Terminates 2021 Designation of Venezuela for Temporary Protected Status",
+    "url": "https://www.uscis.gov/newsroom/news-releases/dhs-terminates-2021-designation-of-venezuela-for-temporary-protected-status",
+    "date": "2025-09-03T20:46:45.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "venezuela",
+        "flag": "🇻🇪"
+      }
+    ],
+    "summary": "📋 Sep 3, 2025 | DHS Terminates 2021 Designation of Venezuela for Temporary Protected Status\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
   },
   {
-    title: "USCIS Announces 2025 Naturalization Civics Test Updates",
-    url: "https://www.uscis.gov/newsroom/news-releases/uscis-announces-2025-naturalization-civics-test-updates",
-    date: "2025-08-15T10:00:00.000Z",
-    content: "USCIS announces updates to the naturalization civics test for 2025.",
-    countries: [],
-    summary: "📅 Aug 15, 2025 | USCIS Announces 2025 Naturalization Civics Test Updates\n🎓 Potential causes for F1 students - F1 students considering future naturalization should be aware of these changes to better prepare for potential citizenship pathways after completing their studies."
+    "title": "USCIS to Modernize Fee Payments with Electronic Funds",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-to-modernize-fee-payments-with-electronic-funds",
+    "date": "2025-08-29T16:21:01.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Aug 29, 2025 | USCIS to Modernize Fee Payments with Electronic Funds\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
   },
   {
-    title: "Enhanced Security Measures for International Student Applications",
-    url: "https://www.uscis.gov/newsroom/news-releases/enhanced-security-measures-international-student-applications",
-    date: "2025-08-10T14:30:00.000Z",
-    content: "USCIS announces new security protocols for international student visa applications.",
-    countries: [{ name: 'china', flag: '🇨🇳' }, { name: 'india', flag: '🇮🇳' }, { name: 'iran', flag: '🇮🇷' }],
-    summary: "📅 Aug 10, 2025 | Enhanced Security Measures for International Student Applications\n🎓 Potential causes for F1 students - New security measures may affect F1 visa processing times and documentation requirements, particularly for students from countries with enhanced screening protocols."
+    "title": "Indian National Sentenced for Visa Fraud Conspiracy",
+    "url": "https://www.uscis.gov/newsroom/news-releases/indian-national-sentenced-for-visa-fraud-conspiracy",
+    "date": "2025-08-22T18:59:59.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "india",
+        "flag": "🇮🇳"
+      }
+    ],
+    "summary": "🎓 Aug 22, 2025 | Indian National Sentenced for Visa Fraud Conspiracy\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
   },
   {
-    title: "USCIS Streamlines F1 Student Visa Processing Procedures",
-    url: "https://www.uscis.gov/newsroom/news-releases/uscis-streamlines-f1-student-visa-processing-procedures",
-    date: "2025-08-05T09:00:00.000Z",
-    content: "USCIS announces streamlined procedures for F1 student visa processing.",
-    countries: [{ name: 'china', flag: '🇨🇳' }, { name: 'india', flag: '🇮🇳' }, { name: 'south korea', flag: '🇰🇷' }, { name: 'japan', flag: '🇯🇵' }],
-    summary: "📅 Aug 5, 2025 | USCIS Streamlines F1 Student Visa Processing Procedures\n🎓 Potential causes for F1 students - Streamlined procedures may reduce processing times and improve efficiency for F1 visa applications, benefiting international students seeking to study in the U.S."
+    "title": "USCIS to Enforce Consequences for Aliens Who Falsify Information",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-to-enforce-consequences-for-aliens-who-falsify-information",
+    "date": "2025-08-20T17:42:56.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Aug 20, 2025 | USCIS to Enforce Consequences for Aliens Who Falsify Information\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
   },
   {
-    title: "Updated F1 Student Work Authorization Guidelines",
-    url: "https://www.uscis.gov/newsroom/news-releases/updated-f1-student-work-authorization-guidelines",
-    date: "2025-07-30T16:45:00.000Z",
-    content: "USCIS announces updated guidelines for F1 student work authorization.",
-    countries: [],
-    summary: "📅 Jul 30, 2025 | Updated F1 Student Work Authorization Guidelines\n🎓 Potential causes for F1 students - New guidelines may affect F1 students' ability to work on-campus, participate in Optional Practical Training (OPT), and maintain compliance with work authorization requirements."
+    "title": "USCIS to Consider Anti-Americanism in Immigrant Benefit Requests",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-to-consider-anti-americanism-in-immigrant-benefit-requests",
+    "date": "2025-08-19T15:26:19.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Aug 19, 2025 | USCIS to Consider Anti-Americanism in Immigrant Benefit Requests\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
   },
   {
-    title: "International Student Status Maintenance Requirements",
-    url: "https://www.uscis.gov/newsroom/news-releases/international-student-status-maintenance-requirements",
-    date: "2025-07-25T11:20:00.000Z",
-    content: "USCIS announces new requirements for maintaining international student status.",
-    countries: [],
-    summary: "📅 Jul 25, 2025 | International Student Status Maintenance Requirements\n🎓 Potential causes for F1 students - Updated requirements may affect how F1 students maintain their status, including enrollment verification, course load requirements, and reporting obligations."
+    "title": "Child Molester in North Carolina Indicted and Arrested for Naturalization Fraud",
+    "url": "https://www.uscis.gov/newsroom/news-releases/child-molester-in-north-carolina-indicted-and-arrested-for-naturalization-fraud",
+    "date": "2025-08-18T18:52:22.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Aug 18, 2025 | Child Molester in North Carolina Indicted and Arrested for Naturalization Fraud\n🎓 Potential causes for F1 students - Highlights importance of maintaining compliance with immigration laws and avoiding fraudulent activities that could jeopardize F1 visa status."
   },
   {
-    title: "F1 Student Visa Extension Processing Updates",
-    url: "https://www.uscis.gov/newsroom/news-releases/f1-student-visa-extension-processing-updates",
-    date: "2025-07-20T13:15:00.000Z",
-    content: "USCIS announces updates to F1 student visa extension processing.",
-    countries: [],
-    summary: "📅 Jul 20, 2025 | F1 Student Visa Extension Processing Updates\n🎓 Potential causes for F1 students - Processing updates may affect F1 students seeking to extend their stay, including documentation requirements, processing times, and eligibility criteria for extensions."
+    "title": "USCIS Assists Federal Operation Targeting Nebraska Human Trafficking Ring at Area Hotels",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-federal-operation-targeting-nebraska-human-trafficking-ring-at-area-hotels",
+    "date": "2025-08-15T14:13:34.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "india",
+        "flag": "🇮🇳"
+      }
+    ],
+    "summary": "📋 Aug 15, 2025 | USCIS Assists Federal Operation Targeting Nebraska Human Trafficking Ring at Area Hotels\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
   },
   {
-    title: "International Student Travel Authorization Changes",
-    url: "https://www.uscis.gov/newsroom/news-releases/international-student-travel-authorization-changes",
-    date: "2025-07-15T08:30:00.000Z",
-    content: "USCIS announces changes to international student travel authorization procedures.",
-    countries: [],
-    summary: "📅 Jul 15, 2025 | International Student Travel Authorization Changes\n🎓 Potential causes for F1 students - Changes to travel authorization may affect F1 students' ability to travel internationally and re-enter the U.S., including documentation requirements and travel restrictions."
+    "title": "USCIS Supports Investigation Leading to Guilty Plea and Mandatory Denaturalization of Committed Sex Offender",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-supports-investigation-leading-to-guilty-plea-and-mandatory-denaturalization-of-committed-sex",
+    "date": "2025-08-13T18:20:59.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Aug 13, 2025 | USCIS Supports Investigation Leading to Guilty Plea and Mandatory Denaturalization of Committed Sex Offender\n🎓 Potential causes for F1 students - May affect F1 students considering future pathways to citizenship after completing their studies."
+  },
+  {
+    "title": "USCIS Updates Policy on CSPA Age Calculation",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-updates-policy-on-cspa-age-calculation",
+    "date": "2025-08-08T13:29:01.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Aug 8, 2025 | USCIS Updates Policy on CSPA Age Calculation\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Assists in Investigation Leading to Removal of Fugitive Criminal Predator",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-investigation-leading-to-removal-of-fugitive-criminal-predator",
+    "date": "2025-08-07T14:21:14.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Aug 7, 2025 | USCIS Assists in Investigation Leading to Removal of Fugitive Criminal Predator\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Updating Policy to Protect Women’s Sports",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-updating-policy-to-protect-womens-sports",
+    "date": "2025-08-04T14:43:56.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Aug 4, 2025 | USCIS Updating Policy to Protect Women’s Sports\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "Colombian National Pleads Guilty to Orchestrating Scheme to Submit Fraudulent Asylum Applications",
+    "url": "https://www.uscis.gov/newsroom/news-releases/colombian-national-pleads-guilty-to-orchestrating-scheme-to-submit-fraudulent-asylum-applications",
+    "date": "2025-08-01T19:21:15.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "colombia",
+        "flag": "🇨🇴"
+      }
+    ],
+    "summary": "📋 Aug 1, 2025 | Colombian National Pleads Guilty to Orchestrating Scheme to Submit Fraudulent Asylum Applications\n🎓 Potential causes for F1 students - Highlights importance of maintaining compliance with immigration laws and avoiding fraudulent activities that could jeopardize F1 visa status."
+  },
+  {
+    "title": "USCIS Continues to Put the Safety of Americans First by Reestablishing Screening and Vetting Standards",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-continues-to-put-the-safety-of-americans-first-by-reestablishing-screening-and-vetting",
+    "date": "2025-08-01T17:19:13.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Aug 1, 2025 | USCIS Continues to Put the Safety of Americans First by Reestablishing Screening and Vetting Standards\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Issues Guidance Regarding Family-Based Immigration Policy",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-issues-guidance-regarding-family-based-immigration-policy",
+    "date": "2025-08-01T16:15:50.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "🎓 Aug 1, 2025 | USCIS Issues Guidance Regarding Family-Based Immigration Policy\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "USCIS Report Uncovers Significant Abuses in the Special Immigrant Juvenile Program",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-report-uncovers-significant-abuses-in-the-special-immigrant-juvenile-program",
+    "date": "2025-07-24T20:19:09.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jul 24, 2025 | USCIS Report Uncovers Significant Abuses in the Special Immigrant Juvenile Program\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Assists in Investigation Leading to Arrest of Haitian Engaged in Violence and Destabilization of Haiti",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-investigation-leading-to-arrest-of-haitian-engaged-in-violence-and-destabilization",
+    "date": "2025-07-23T18:29:22.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jul 23, 2025 | USCIS Assists in Investigation Leading to Arrest of Haitian Engaged in Violence and Destabilization of Haiti\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "Reminder: Updated Fees Based on H.R. 1",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-updates-fees-based-on-hr-1",
+    "date": "2025-07-18T20:30:01.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jul 18, 2025 | Reminder: Updated Fees Based on H.R. 1\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "Joseph B. Edlow Begins Service as Director of U.S. Citizenship and Immigration Services",
+    "url": "https://www.uscis.gov/newsroom/news-releases/joseph-b-edlow-begins-service-as-director-of-us-citizenship-and-immigration-services",
+    "date": "2025-07-18T17:48:42.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "🎓 Jul 18, 2025 | Joseph B. Edlow Begins Service as Director of U.S. Citizenship and Immigration Services\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "USCIS Reaches Fiscal Year 2026 H-1B Cap",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-reaches-fiscal-year-2026-h-1b-cap",
+    "date": "2025-07-18T13:09:31.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jul 18, 2025 | USCIS Reaches Fiscal Year 2026 H-1B Cap\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Uncovers U Visa Fraud Scheme by Corrupt Law Enforcement, Leading to Federal Indictments",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-uncovers-u-visa-fraud-scheme-by-corrupt-law-enforcement-leading-to-federal-indictments",
+    "date": "2025-07-17T16:12:18.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "🎓 Jul 17, 2025 | USCIS Uncovers U Visa Fraud Scheme by Corrupt Law Enforcement, Leading to Federal Indictments\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "Brazilian National in Massachusetts Sentenced for Unlawful Reentry and Selling Green Cards and Counterfeit Social Security Cards",
+    "url": "https://www.uscis.gov/newsroom/news-releases/brazilian-national-in-massachusetts-sentenced-for-unlawful-reentry-and-selling-green-cards-and",
+    "date": "2025-07-14T20:37:05.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "brazil",
+        "flag": "🇧🇷"
+      }
+    ],
+    "summary": "📋 Jul 14, 2025 | Brazilian National in Massachusetts Sentenced for Unlawful Reentry and Selling Green Cards and Counterfeit Social Security Cards\n🎓 Potential causes for F1 students - May affect F1 students' ability to travel internationally and re-enter the U.S."
+  },
+  {
+    "title": "USCIS Assists ICE in Arrest of One of El Salvador’s “Top 100 Most Wanted” Hiding in Nebraska",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-ice-in-arrest-of-one-of-el-salvadors-top-100-most-wanted-hiding-in-nebraska",
+    "date": "2025-07-14T13:01:49.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "el salvador",
+        "flag": "🇸🇻"
+      }
+    ],
+    "summary": "📋 Jul 14, 2025 | USCIS Assists ICE in Arrest of One of El Salvador’s “Top 100 Most Wanted” Hiding in Nebraska\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "New Fees for Certain Immigration Benefit Requests",
+    "url": "https://www.uscis.gov/newsroom/alerts/new-fees-for-certain-immigration-benefit-requests",
+    "date": "2025-07-11T19:34:38.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "🎓 Jul 11, 2025 | New Fees for Certain Immigration Benefit Requests\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "DHS Terminates TPS for Nicaragua: It Was Never Meant to Last 25 Years",
+    "url": "https://www.uscis.gov/newsroom/news-releases/dhs-terminates-tps-for-nicaragua-it-was-never-meant-to-last-25-years",
+    "date": "2025-07-07T16:08:09.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jul 7, 2025 | DHS Terminates TPS for Nicaragua: It Was Never Meant to Last 25 Years\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "With Improved Conditions, DHS Ends TPS for Honduras",
+    "url": "https://www.uscis.gov/newsroom/news-releases/with-improved-conditions-dhs-ends-tps-for-honduras",
+    "date": "2025-07-07T16:02:07.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "honduras",
+        "flag": "🇭🇳"
+      }
+    ],
+    "summary": "📋 Jul 7, 2025 | With Improved Conditions, DHS Ends TPS for Honduras\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Celebrates Independence Day 2025 Welcoming Those Who Earned Citizenship the Right Way",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-celebrates-independence-day-2025-welcoming-those-who-earned-citizenship-the-right-way",
+    "date": "2025-07-03T18:21:04.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jul 3, 2025 | USCIS Celebrates Independence Day 2025 Welcoming Those Who Earned Citizenship the Right Way\n🎓 Potential causes for F1 students - May affect F1 students considering future pathways to citizenship after completing their studies."
+  },
+  {
+    "title": "Convicted Sex Offender in North Carolina Indicted for Naturalization Fraud",
+    "url": "https://www.uscis.gov/newsroom/news-releases/convicted-sex-offender-in-north-carolina-indicted-for-naturalization-fraud",
+    "date": "2025-06-30T13:32:40.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "mexico",
+        "flag": "🇲🇽"
+      }
+    ],
+    "summary": "📋 Jun 30, 2025 | Convicted Sex Offender in North Carolina Indicted for Naturalization Fraud\n🎓 Potential causes for F1 students - Highlights importance of maintaining compliance with immigration laws and avoiding fraudulent activities that could jeopardize F1 visa status."
+  },
+  {
+    "title": "DHS Terminates Haiti TPS, Encourages Haitians to Obtain Lawful Status",
+    "url": "https://www.uscis.gov/newsroom/news-releases/dhs-terminates-haiti-tps-encourages-haitians-to-obtain-lawful-status",
+    "date": "2025-06-27T20:04:36.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jun 27, 2025 | DHS Terminates Haiti TPS, Encourages Haitians to Obtain Lawful Status\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Updates Guidance on Validity of Alien Refugee and Asylee Marriages",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-updates-guidance-on-validity-of-alien-refugee-and-asylee-marriages",
+    "date": "2025-06-24T16:32:02.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jun 24, 2025 | USCIS Updates Guidance on Validity of Alien Refugee and Asylee Marriages\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Assists in Employment-Based Visa Fraud Investigation Leading to Federal Indictments",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-employment-based-visa-fraud-investigation-leading-to-federal-indictments",
+    "date": "2025-06-17T13:10:49.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "pakistan",
+        "flag": "🇵🇰"
+      }
+    ],
+    "summary": "🎓 Jun 17, 2025 | USCIS Assists in Employment-Based Visa Fraud Investigation Leading to Federal Indictments\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "Nigerian-Born Man Previously Convicted in an $80 Million  Fraud Case Indicted on New Charges of Naturalization Fraud",
+    "url": "https://www.uscis.gov/newsroom/news-releases/nigerian-born-man-previously-convicted-in-an-80-million-fraud-case-indicted-on-new-charges-of",
+    "date": "2025-06-17T13:05:55.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "nigeria",
+        "flag": "🇳🇬"
+      }
+    ],
+    "summary": "📋 Jun 17, 2025 | Nigerian-Born Man Previously Convicted in an $80 Million  Fraud Case Indicted on New Charges of Naturalization Fraud\n🎓 Potential causes for F1 students - Highlights importance of maintaining compliance with immigration laws and avoiding fraudulent activities that could jeopardize F1 visa status."
+  },
+  {
+    "title": "Update to Policy on Disability Exceptions to Naturalization Requirements",
+    "url": "https://www.uscis.gov/newsroom/alerts/update-to-policy-on-disability-exceptions-to-naturalization-requirements",
+    "date": "2025-06-13T13:34:09.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jun 13, 2025 | Update to Policy on Disability Exceptions to Naturalization Requirements\n🎓 Potential causes for F1 students - May affect F1 students considering future pathways to citizenship after completing their studies."
+  },
+  {
+    "title": "USCIS Issues Guidance Regarding Disclosure of Derogatory Information",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-issues-guidance-regarding-disclosure-of-derogatory-information",
+    "date": "2025-06-12T16:04:23.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jun 12, 2025 | USCIS Issues Guidance Regarding Disclosure of Derogatory Information\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Initiates Removal Proceedings Against 26,000 Aliens Since February",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-initiates-removal-proceedings-against-26000-aliens-since-february",
+    "date": "2025-06-12T13:31:04.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jun 12, 2025 | USCIS Initiates Removal Proceedings Against 26,000 Aliens Since February\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Changes Validity Period for Any Form I-693 Signed on or after Nov. 1, 2023",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-changes-validity-period-for-any-form-i-693-signed-on-or-after-nov-1-2023",
+    "date": "2025-06-11T13:26:43.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jun 11, 2025 | USCIS Changes Validity Period for Any Form I-693 Signed on or after Nov. 1, 2023\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "President Trump Tells Citizens to ‘Fiercely Guard’ American Way of Life in New Naturalization Ceremony Message",
+    "url": "https://www.uscis.gov/newsroom/news-releases/president-trump-tells-citizens-to-fiercely-guard-american-way-of-life-in-new-naturalization-ceremony",
+    "date": "2025-06-09T21:12:03.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jun 9, 2025 | President Trump Tells Citizens to ‘Fiercely Guard’ American Way of Life in New Naturalization Ceremony Message\n🎓 Potential causes for F1 students - May affect F1 students considering future pathways to citizenship after completing their studies."
+  },
+  {
+    "title": "DHS Terminates Temporary Protected Status for Nepal",
+    "url": "https://www.uscis.gov/newsroom/alerts/dhs-terminates-temporary-protected-status-for-nepal",
+    "date": "2025-06-05T13:36:58.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "nepal",
+        "flag": "🇳🇵"
+      }
+    ],
+    "summary": "📋 Jun 5, 2025 | DHS Terminates Temporary Protected Status for Nepal\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "Immigration Relief in Emergencies or Unforeseen Circumstances",
+    "url": "https://www.uscis.gov/newsroom/immigration-relief-in-emergencies-or-unforeseen-circumstances",
+    "date": "2025-06-05T08:00:00.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "israel",
+        "flag": "🇮🇱"
+      }
+    ],
+    "summary": "🎓 Jun 5, 2025 | Immigration Relief in Emergencies or Unforeseen Circumstances\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "CBP, ICE, and USCIS to Ramp Up Crackdown on Visa Overstays Following Boulder Terrorist Attack",
+    "url": "https://www.uscis.gov/newsroom/news-releases/cbp-ice-and-uscis-to-ramp-up-crackdown-on-visa-overstays-following-boulder-terrorist-attack",
+    "date": "2025-06-04T16:27:56.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "egypt",
+        "flag": "🇪🇬"
+      }
+    ],
+    "summary": "🎓 Jun 4, 2025 | CBP, ICE, and USCIS to Ramp Up Crackdown on Visa Overstays Following Boulder Terrorist Attack\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "DHS Terminates Temporary Protected Status for Cameroon",
+    "url": "https://www.uscis.gov/newsroom/alerts/dhs-terminates-temporary-protected-status-for-cameroon",
+    "date": "2025-06-03T16:04:18.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jun 3, 2025 | DHS Terminates Temporary Protected Status for Cameroon\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "Indian National Pleads Guilty to Visa Fraud Conspiracy",
+    "url": "https://www.uscis.gov/newsroom/news-releases/indian-national-pleads-guilty-to-visa-fraud-conspiracy",
+    "date": "2025-05-29T19:09:51.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "india",
+        "flag": "🇮🇳"
+      }
+    ],
+    "summary": "🎓 May 29, 2025 | Indian National Pleads Guilty to Visa Fraud Conspiracy\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "USCIS Assists in Investigation Leading to Sentencing of Mexican National for Smuggling and Labor Trafficking Scheme and Illegally Reentering",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-investigation-leading-to-sentencing-of-mexican-national-for-smuggling-and-labor",
+    "date": "2025-05-28T14:06:49.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "mexico",
+        "flag": "🇲🇽"
+      }
+    ],
+    "summary": "📋 May 28, 2025 | USCIS Assists in Investigation Leading to Sentencing of Mexican National for Smuggling and Labor Trafficking Scheme and Illegally Reentering\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "Maryland Man Sentenced to Federal Prison for Visa Fraud",
+    "url": "https://www.uscis.gov/newsroom/news-releases/maryland-man-sentenced-to-federal-prison-for-visa-fraud",
+    "date": "2025-05-28T12:23:32.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "canada",
+        "flag": "🇨🇦"
+      }
+    ],
+    "summary": "🎓 May 28, 2025 | Maryland Man Sentenced to Federal Prison for Visa Fraud\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "USCIS Deploys Common Sense Tools to Verify Voters",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-deploys-common-sense-tools-to-verify-voters",
+    "date": "2025-05-22T14:27:10.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 May 22, 2025 | USCIS Deploys Common Sense Tools to Verify Voters\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "Jamaican Citizen Arrested for Making a False Claim of Citizenship to Register to Vote in the 2024 Presidential Primary Election",
+    "url": "https://www.uscis.gov/newsroom/news-releases/jamaican-citizen-arrested-for-making-a-false-claim-of-citizenship-to-register-to-vote-in-the-2024",
+    "date": "2025-05-14T17:44:43.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "panama",
+        "flag": "🇵🇦"
+      }
+    ],
+    "summary": "📋 May 14, 2025 | Jamaican Citizen Arrested for Making a False Claim of Citizenship to Register to Vote in the 2024 Presidential Primary Election\n🎓 Potential causes for F1 students - May affect F1 students considering future pathways to citizenship after completing their studies."
+  },
+  {
+    "title": "USCIS Assists in Investigation of Cuban National Indicted on Charges Related to Credit Card “Skimming” and Lying on a Naturalization Application",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-investigation-of-cuban-national-indicted-on-charges-related-to-credit-card-skimming",
+    "date": "2025-05-14T13:33:38.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "cuba",
+        "flag": "🇨🇺"
+      }
+    ],
+    "summary": "📋 May 14, 2025 | USCIS Assists in Investigation of Cuban National Indicted on Charges Related to Credit Card “Skimming” and Lying on a Naturalization Application\n🎓 Potential causes for F1 students - May affect F1 students considering future pathways to citizenship after completing their studies."
+  },
+  {
+    "title": "USCIS Assists in Investigation of Palestinians Charged with Unlawful Possession of Firearms and Ammunition",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-investigation-of-palestinians-charged-with-unlawful-possession-of-firearms-and",
+    "date": "2025-05-12T18:52:30.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 May 12, 2025 | USCIS Assists in Investigation of Palestinians Charged with Unlawful Possession of Firearms and Ammunition\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "DHS Terminating Temporary Protected Status for Afghanistan",
+    "url": "https://www.uscis.gov/newsroom/news-releases/dhs-terminating-temporary-protected-status-for-afghanistan",
+    "date": "2025-05-12T16:33:57.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "afghanistan",
+        "flag": "🇦🇫"
+      }
+    ],
+    "summary": "📋 May 12, 2025 | DHS Terminating Temporary Protected Status for Afghanistan\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Assists in Investigation Leading to Conviction of Indian Citizen for Submitting Fraudulent Immigration Application",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-investigation-leading-to-conviction-of-indian-citizen-for-submitting-fraudulent",
+    "date": "2025-05-05T19:22:29.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "india",
+        "flag": "🇮🇳"
+      }
+    ],
+    "summary": "🎓 May 5, 2025 | USCIS Assists in Investigation Leading to Conviction of Indian Citizen for Submitting Fraudulent Immigration Application\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "First 100 Days: USCIS Delivering on Making America Safe Again",
+    "url": "https://www.uscis.gov/newsroom/news-releases/first-100-days-uscis-delivering-on-making-america-safe-again",
+    "date": "2025-04-29T19:04:19.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "venezuela",
+        "flag": "🇻🇪"
+      },
+      {
+        "name": "cuba",
+        "flag": "🇨🇺"
+      }
+    ],
+    "summary": "📋 Apr 29, 2025 | First 100 Days: USCIS Delivering on Making America Safe Again\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Assists with ICE Investigation that Dismantled a Nationwide Marriage Fraud Operation",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-with-ice-investigation-that-dismantled-a-nationwide-marriage-fraud-operation",
+    "date": "2025-04-28T17:14:59.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Apr 28, 2025 | USCIS Assists with ICE Investigation that Dismantled a Nationwide Marriage Fraud Operation\n🎓 Potential causes for F1 students - Highlights importance of maintaining compliance with immigration laws and avoiding fraudulent activities that could jeopardize F1 visa status."
+  },
+  {
+    "title": "USCIS Assists Investigation Leading to Sentencing of Mexican National for Smuggling and Labor Trafficking Scheme",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-investigation-leading-to-sentencing-of-mexican-national-for-smuggling-and-labor",
+    "date": "2025-04-24T19:04:44.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "mexico",
+        "flag": "🇲🇽"
+      }
+    ],
+    "summary": "📋 Apr 24, 2025 | USCIS Assists Investigation Leading to Sentencing of Mexican National for Smuggling and Labor Trafficking Scheme\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Assists FBI Investigation Leading to Guilty Plea in ISIS-Inspired Election Day Terror Plot",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-fbi-investigation-leading-to-guilty-plea-in-isis-inspired-election-day-terror-plot",
+    "date": "2025-04-24T17:58:32.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "afghanistan",
+        "flag": "🇦🇫"
+      }
+    ],
+    "summary": "📋 Apr 24, 2025 | USCIS Assists FBI Investigation Leading to Guilty Plea in ISIS-Inspired Election Day Terror Plot\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "Cap Reached for Additional Returning Worker H-2B Visas for the Early Second Half of FY 2025",
+    "url": "https://www.uscis.gov/newsroom/alerts/cap-reached-for-additional-returning-worker-h-2b-visas-for-the-early-second-half-of-fy-2025",
+    "date": "2025-04-23T14:30:24.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "🎓 Apr 23, 2025 | Cap Reached for Additional Returning Worker H-2B Visas for the Early Second Half of FY 2025\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "USCIS assists with a Federal Terrorism Case of a Former Iraqi Refugee Pleading Guilty to Supporting ISIS",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-with-a-federal-terrorism-case-of-a-former-iraqi-refugee-pleading-guilty-to-supporting",
+    "date": "2025-04-22T13:12:00.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "iraq",
+        "flag": "🇮🇶"
+      }
+    ],
+    "summary": "📋 Apr 22, 2025 | USCIS assists with a Federal Terrorism Case of a Former Iraqi Refugee Pleading Guilty to Supporting ISIS\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Assists in Investigation Leading to Sentencing of U.K. Man for Lying to Immigration Authorities",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-investigation-leading-to-sentencing-of-uk-man-for-lying-to-immigration-authorities",
+    "date": "2025-04-18T15:16:27.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "france",
+        "flag": "🇫🇷"
+      },
+      {
+        "name": "united kingdom",
+        "flag": "🇬🇧"
+      }
+    ],
+    "summary": "🎓 Apr 18, 2025 | USCIS Assists in Investigation Leading to Sentencing of U.K. Man for Lying to Immigration Authorities\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "USCIS Assists in ICE Investigation Leading to Arrest of 133 Alien Offenders in New York",
+    "url": "https://www.uscis.gov/newsroom/news-releases/uscis-assists-in-ice-investigation-leading-to-arrest-of-133-alien-offenders-in-new-york",
+    "date": "2025-04-14T13:57:30.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Apr 14, 2025 | USCIS Assists in ICE Investigation Leading to Arrest of 133 Alien Offenders in New York\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Announces Employment Authorization Document Application Procedures for Certain Hong Kong Residents Covered by Deferred Enforced Departure",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-announces-employment-authorization-document-application-procedures-for-certain-hong-kong",
+    "date": "2025-04-03T13:08:31.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Apr 3, 2025 | USCIS Announces Employment Authorization Document Application Procedures for Certain Hong Kong Residents Covered by Deferred Enforced Departure\n🎓 Potential causes for F1 students - May impact F1 students' work authorization and employment opportunities."
+  },
+  {
+    "title": "FY 2026 H-1B Initial Registration Selection Process Completed",
+    "url": "https://www.uscis.gov/newsroom/alerts/fy-2026-h-1b-initial-registration-selection-process-completed",
+    "date": "2025-03-31T14:43:54.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Mar 31, 2025 | FY 2026 H-1B Initial Registration Selection Process Completed\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Reaches H-2B Cap for Second Half of FY 2025 and Filing Dates Now Available for Supplemental Visas",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-reaches-h-2b-cap-for-second-half-of-fy-2025-and-filing-dates-now-available-for-supplemental",
+    "date": "2025-03-26T21:48:13.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "🎓 Mar 26, 2025 | USCIS Reaches H-2B Cap for Second Half of FY 2025 and Filing Dates Now Available for Supplemental Visas\n🎓 Potential causes for F1 students - May impact F1 visa processing and student status requirements."
+  },
+  {
+    "title": "USCIS Probationary Reinstatements",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-probationary-reinstatements",
+    "date": "2025-03-17T21:13:40.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Mar 17, 2025 | USCIS Probationary Reinstatements\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "FY 2026 H-1B Cap Initial Registration Period Opens on March 7",
+    "url": "https://www.uscis.gov/newsroom/alerts/fy-2026-h-1b-cap-initial-registration-period-opens-on-march-7",
+    "date": "2025-02-05T21:07:01.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Feb 5, 2025 | FY 2026 H-1B Cap Initial Registration Period Opens on March 7\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "DHS Terminates the 2023 Designation of Venezuela for Temporary Protected Status",
+    "url": "https://www.uscis.gov/newsroom/alerts/dhs-terminates-the-2023-designation-of-venezuela-for-temporary-protected-status",
+    "date": "2025-02-03T21:48:09.000Z",
+    "content": "",
+    "countries": [
+      {
+        "name": "venezuela",
+        "flag": "🇻🇪"
+      }
+    ],
+    "summary": "📋 Feb 3, 2025 | DHS Terminates the 2023 Designation of Venezuela for Temporary Protected Status\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
+  },
+  {
+    "title": "USCIS Waives COVID-19 Vaccination Requirement for Adjustment of Status Applicants",
+    "url": "https://www.uscis.gov/newsroom/alerts/uscis-waives-covid-19-vaccination-requirement-for-adjustment-of-status-applicants",
+    "date": "2025-01-22T23:12:54.000Z",
+    "content": "",
+    "countries": [],
+    "summary": "📋 Jan 22, 2025 | USCIS Waives COVID-19 Vaccination Requirement for Adjustment of Status Applicants\n🎓 Potential causes for F1 students - General immigration policy change that may indirectly affect student visa holders."
   }
-  ];
+];
 }
 
 // Generate HTML template
