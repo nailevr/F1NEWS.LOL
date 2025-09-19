@@ -2,8 +2,6 @@ import express from 'express';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import OpenAI from 'openai';
-import fs from 'fs';
-import path from 'path';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -114,19 +112,17 @@ const COUNTRY_FLAGS = {
   'brunei': '🇧🇳'
 };
 
-// Load existing data
+// In-memory storage for serverless environment
+let cachedData = { articles: [], summaries: {}, lastUpdated: null };
+
+// Load cached data
 function loadData() {
-  try {
-    const data = fs.readFileSync('uscis_news_data.json', 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    return { articles: [], summaries: {} };
-  }
+  return cachedData;
 }
 
-// Save data
+// Save data to memory
 function saveData(data) {
-  fs.writeFileSync('uscis_news_data.json', JSON.stringify(data, null, 2));
+  cachedData = { ...data, lastUpdated: new Date().toISOString() };
 }
 
 // Detect countries in text
@@ -373,7 +369,7 @@ async function scrapeNews() {
   };
   
   saveData(finalData);
-  console.log(`📁 Saved ${updatedArticles.length} total articles to uscis_news_data.json`);
+  console.log(`📁 Cached ${updatedArticles.length} total articles in memory`);
   
   return finalData;
 }
@@ -817,6 +813,30 @@ function generateHTML(newsData) {
     </script>
 </body>
 </html>`;
+}
+
+// Initialize with sample data if empty
+if (cachedData.articles.length === 0) {
+  cachedData = {
+    articles: [
+      {
+        title: "USCIS Announces New F1 Student Visa Processing Updates",
+        url: "https://www.uscis.gov/newsroom/news-releases/uscis-announces-new-f1-student-visa-processing-updates",
+        date: new Date().toISOString(),
+        content: "USCIS has announced new processing procedures for F1 student visas that will streamline applications and reduce processing times for international students.",
+        countries: [{ name: 'china', flag: '🇨🇳' }, { name: 'india', flag: '🇮🇳' }]
+      },
+      {
+        title: "Enhanced Security Measures for International Student Applications",
+        url: "https://www.uscis.gov/newsroom/news-releases/enhanced-security-measures-international-student-applications",
+        date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+        content: "New security protocols have been implemented to ensure the integrity of international student visa applications while maintaining efficient processing.",
+        countries: [{ name: 'mexico', flag: '🇲🇽' }, { name: 'philippines', flag: '🇵🇭' }]
+      }
+    ],
+    summaries: {},
+    lastUpdated: new Date().toISOString()
+  };
 }
 
 // Routes
